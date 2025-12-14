@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: pawpal_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-pawpal}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # Redis (for Django Channels WebSocket)
+  redis:
+    image: redis:7-alpine
+    container_name: pawpal_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  # Django Backend
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: pawpal_server
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./server:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  # React Frontend
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: pawpal_client
+    restart: unless-stopped
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+
+volumes:
+  postgres_data:
