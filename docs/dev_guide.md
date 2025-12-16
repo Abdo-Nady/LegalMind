@@ -1,4 +1,4 @@
-# PawPal Developer Guide
+# DocuMind Developer Guide
 
 Quick setup guide for new developers.
 
@@ -79,7 +79,7 @@ INSTALLED_APPS = [
 ## Project Structure
 
 ```
-PawPal/
+DocuMind/
 ├── client/          # React frontend (Vite)
 │   ├── src/
 │   └── package.json
@@ -114,7 +114,7 @@ Copy `.env.example` to `.env` and configure:
 ```
 SECRET_KEY=your-secret-key
 DEBUG=True
-DB_NAME=pawpal
+DB_NAME=documind
 DB_USER=postgres
 DB_PASSWORD=postgres
 ```
