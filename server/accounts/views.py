@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import ChangePasswordSerializer, UserProfileSerializer
-from django.core.exceptions import ValidationError
 
-ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 MAX_AVATAR_SIZE = 5 * 1024 * 1024  # 5MB
+
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
     """
@@ -62,9 +62,23 @@ class UploadAvatarView(APIView):
         profile = request.user.profile
         avatar = request.FILES.get("avatar")
 
+        # Validate presence
         if not avatar:
             return Response(
                 {"error": "No avatar file provided"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate file type
+        if avatar.content_type not in ALLOWED_IMAGE_TYPES:
+            return Response(
+                {"error": "Unsupported file type"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        # Validate file size
+        if avatar.size > MAX_AVATAR_SIZE:
+            return Response(
+                {"error": "Avatar file size exceeds the maximum limit of 5MB"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # delete old avatar
