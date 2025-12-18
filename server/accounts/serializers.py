@@ -2,6 +2,7 @@ from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import UserDetailsSerializer
 from .models import User, UserProfile
+from django.contrib.auth import get_user_model
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -100,25 +101,34 @@ class CustomRegisterSerializer(RegisterSerializer):
 
     username = serializers.CharField(required=True, max_length=150, allow_blank=False)
 
+    def validate_email(self, email):
+        """Validate that email is unique"""
+        User = get_user_model()
+        if User.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError(
+                "A user is already registered with this email address."
+            )
+        return email
+
     def get_cleaned_data(self):
         """
         Get cleaned data including username
         """
         data = super().get_cleaned_data()
-        data['username'] = self.validated_data.get('username')
+        data["username"] = self.validated_data.get("username")
         return data
 
     def save(self, request):
         """
         Save user with username
         """
-        username = self.validated_data.get('username', '').strip()
-        
+        username = self.validated_data.get("username", "").strip()
+
         # Call parent save to create the user
         user = super().save(request)
-        
-        # Explicitly set username 
+
+        # Explicitly set username
         user.username = username
         user.save()
-        
+
         return user

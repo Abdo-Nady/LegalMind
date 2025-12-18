@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     # auth
     "dj_rest_auth",
     "dj_rest_auth.registration",
@@ -107,6 +108,7 @@ REST_FRAMEWORK = {
 REST_AUTH = {
     "USE_JWT": True,
     "JWT_AUTH_COOKIE": "jwt-auth",
+    "JWT_AUTH_HTTPONLY": False,  # We should change it to true in production
     "JWT_AUTH_REFRESH_COOKIE": "jwt-refresh-token",
     "USER_DETAILS_SERIALIZER": "accounts.serializers.CustomUserDetailsSerializer",
     "REGISTER_SERIALIZER": "accounts.serializers.CustomRegisterSerializer",
@@ -119,6 +121,7 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "SIGNING_KEY": SECRET_KEY,
 }
 
 

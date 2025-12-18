@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+
 class User(AbstractUser):
     """
     Custom User Model
@@ -17,6 +18,8 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=150,
         unique=False,
+        blank=False,  # Required in forms
+        null=False,  # Not NULL in database
     )
 
     USERNAME_FIELD = "email"
@@ -54,5 +57,5 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    if hasattr(instance, 'profile'):
+    if hasattr(instance, "profile"):
         instance.profile.save()
