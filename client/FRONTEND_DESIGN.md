@@ -116,11 +116,13 @@ We will build a library of components to ensure velocity and consistency.
 - `DashboardLayout`: Sidebar + Main Content Area.
 - `WorkspaceLayout`: Full-screen, no header margin (immersive).
 
-## 4. Recommended Library Stack (Additions)
+### Library
 
-To implement this efficiently:
-
-- **PDF Rendering**: `react-pdf` or `pdfjs-dist`.
-- **Split Panes**: `react-resizable-panels` (crucial for that "IDE" feel).
-- **Markdown**: `react-markdown` + `remark-gfm`.
-- **Icons**: `lucide-react` (clean, modern, commonly used with shadcn/ui).
+- Material UI
+- React Router
+- React PDF
+- React Resizable Panels
+- React Markdown
+- Lucide React
+- axios
+- react query
