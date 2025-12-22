@@ -41,6 +41,13 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
 
     profile = UserProfileSerializer(read_only=True)
 
+    # Override username field to remove uniqueness validation
+    username = serializers.CharField(
+        max_length=150,
+        required=False,
+        allow_blank=False,
+    )
+
     class Meta(UserDetailsSerializer.Meta):
         model = User
         fields = [
@@ -49,6 +56,28 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             "username",
             "profile",
         ]
+
+    def validate_username(self, value):
+        """
+        Override validate_username to allow non-unique usernames
+        """
+        # No uniqueness check - just return the value
+        return value
+
+    def update(self, instance, validated_data):
+        """
+        Update user instance
+        """
+        # Update username if provided
+        if "username" in validated_data:
+            instance.username = validated_data["username"]
+
+        # Update email if provided (but keep uniqueness check for email)
+        if "email" in validated_data:
+            instance.email = validated_data["email"]
+
+        instance.save()
+        return instance
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -100,6 +129,13 @@ class CustomRegisterSerializer(RegisterSerializer):
     """
 
     username = serializers.CharField(required=True, max_length=150, allow_blank=False)
+
+    def validate_username(self, value):
+        """
+        Override validate_username to allow non-unique usernames
+        """
+        # No uniqueness check - just return the value
+        return value
 
     def validate_email(self, email):
         """Validate that email is unique"""
