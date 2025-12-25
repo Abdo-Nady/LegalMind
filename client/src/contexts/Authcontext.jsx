@@ -1,5 +1,11 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI, getTokens } from '@/services/api';
+import { createContext, useContext, useState } from 'react';
+import {
+    useCurrentUser,
+    useLogin as useLoginMutation,
+    useRegister as useRegisterMutation,
+    useGoogleLogin as useGoogleLoginMutation,
+    useLogout as useLogoutMutation,
+} from '@/hooks/useAuth';
 
 const AuthContext = createContext(null);
 
@@ -12,106 +18,60 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [isGuest, setIsGuest] = useState(false);
+    const [isGuest, setIsGuest] = useState(() => {
+        return localStorage.getItem('isGuest') === 'true';
+    });
 
-    // Check if user is authenticated on mount
-    useEffect(() => {
-        checkAuth();
-    }, []);
+    // React Query hooks
+    const { data: user, isLoading: loading, refetch: refreshUser } = useCurrentUser();
+    const loginMutation = useLoginMutation();
+    const registerMutation = useRegisterMutation();
+    const googleLoginMutation = useGoogleLoginMutation();
+    const logoutMutation = useLogoutMutation();
 
-    const checkAuth = async () => {
-        const { accessToken } = getTokens();
-        const guestFlag = localStorage.getItem('isGuest');
-
-        if (guestFlag === 'true') {
-            setIsGuest(true);
-            setLoading(false);
-            return;
-        }
-
-        if (!accessToken) {
-            setLoading(false);
-            return;
-        }
-
-        try {
-            const userData = await authAPI.getCurrentUser();
-            setUser(userData);
-            setIsGuest(false);
-        } catch (error) {
-            console.error('Auth check failed:', error);
-            setUser(null);
-            setIsGuest(false);
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    // Login handler
     const login = async (email, password) => {
-        const data = await authAPI.login(email, password);
-        const userData = await authAPI.getCurrentUser();
-        setUser(userData);
-        setIsGuest(false);
+        await loginMutation.mutateAsync({ email, password });
         localStorage.removeItem('isGuest');
-        return data;
+        setIsGuest(false);
     };
 
+    // Register handler
     const register = async (username, email, password1, password2) => {
-        const data = await authAPI.register(username, email, password1, password2);
-        const userData = await authAPI.getCurrentUser();
-        setUser(userData);
-        setIsGuest(false);
+        await registerMutation.mutateAsync({ username, email, password1, password2 });
         localStorage.removeItem('isGuest');
-        return data;
+        setIsGuest(false);
     };
 
+    // Google login handler
     const googleLogin = async (token) => {
-        const data = await authAPI.googleLogin(token);
-        const userData = await authAPI.getCurrentUser();
-        setUser(userData);
-        setIsGuest(false);
+        await googleLoginMutation.mutateAsync(token);
         localStorage.removeItem('isGuest');
-        return data;
+        setIsGuest(false);
     };
 
+    // Guest mode handler
     const setGuestMode = () => {
         setIsGuest(true);
-        setUser(null);
         localStorage.setItem('isGuest', 'true');
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
     };
 
+    // Logout handler
     const logout = async () => {
         if (isGuest) {
             setIsGuest(false);
             localStorage.removeItem('isGuest');
             return;
         }
-        await authAPI.logout();
-        setUser(null);
+        await logoutMutation.mutateAsync();
         setIsGuest(false);
         localStorage.removeItem('isGuest');
     };
 
-    // Add function to refresh user data
-    const refreshUser = async () => {
-        if (isGuest) return;
-        const { accessToken } = getTokens();
-        if (!accessToken) return;
-
-        try {
-            const userData = await authAPI.getCurrentUser();
-            setUser(userData);
-        } catch (error) {
-            console.error('Failed to refresh user:', error);
-        }
-    };
-
     const value = {
-        user,
+        user: user || null,
         loading,
         login,
         register,
@@ -119,7 +79,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         isGuest,
         setGuestMode,
-        refreshUser, // Add this
+        refreshUser,
         isAuthenticated: !!user || isGuest,
     };
 

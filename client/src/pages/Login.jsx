@@ -59,13 +59,37 @@ export default function Login() {
       // Force navigation using window.location
       window.location.href = "/dashboard";
     } catch (error) {
+      // Parse Django validation errors
       let errorMessage = "Failed to sign in with Google";
-      try {
-        const errorData = JSON.parse(error.message);
-        errorMessage = Object.values(errorData).flat().join(", ") || errorData.detail || errorMessage;
-      } catch {
-        errorMessage = error.message || errorMessage;
+
+      // Try to get error from response data first
+      const errorData = error.response?.data;
+
+      if (errorData) {
+        // Check for field-specific errors (Django returns errors as objects)
+        if (typeof errorData === 'object' && !errorData.detail) {
+          const errors = [];
+          for (const [field, messages] of Object.entries(errorData)) {
+            if (Array.isArray(messages)) {
+              errors.push(...messages);
+            } else if (typeof messages === 'string') {
+              errors.push(messages);
+            }
+          }
+          errorMessage = errors.join(' ') || errorMessage;
+        } else {
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        }
+      } else if (error.message) {
+        // Fallback to parsing error.message if no response data
+        try {
+          const parsedError = JSON.parse(error.message);
+          errorMessage = Object.values(parsedError).flat().join(", ") || parsedError.detail || errorMessage;
+        } catch {
+          errorMessage = error.message || errorMessage;
+        }
       }
+
       toast({
         title: "Error",
         description: errorMessage,
@@ -102,13 +126,37 @@ export default function Login() {
                   // Navigate immediately
                   navigate("/dashboard");
                 } catch (error) {
+                  // Parse Django validation errors
                   let errorMessage = "Failed to sign in with Google";
-                  try {
-                    const errorData = JSON.parse(error.message);
-                    errorMessage = Object.values(errorData).flat().join(", ") || errorData.detail || errorMessage;
-                  } catch {
-                    errorMessage = error.message || errorMessage;
+
+                  // Try to get error from response data first
+                  const errorData = error.response?.data;
+
+                  if (errorData) {
+                    // Check for field-specific errors (Django returns errors as objects)
+                    if (typeof errorData === 'object' && !errorData.detail) {
+                      const errors = [];
+                      for (const [field, messages] of Object.entries(errorData)) {
+                        if (Array.isArray(messages)) {
+                          errors.push(...messages);
+                        } else if (typeof messages === 'string') {
+                          errors.push(messages);
+                        }
+                      }
+                      errorMessage = errors.join(' ') || errorMessage;
+                    } else {
+                      errorMessage = errorData.detail || errorData.message || errorMessage;
+                    }
+                  } else if (error.message) {
+                    // Fallback to parsing error.message if no response data
+                    try {
+                      const parsedError = JSON.parse(error.message);
+                      errorMessage = Object.values(parsedError).flat().join(", ") || parsedError.detail || errorMessage;
+                    } catch {
+                      errorMessage = error.message || errorMessage;
+                    }
                   }
+
                   toast({
                     title: "Error",
                     description: errorMessage,
@@ -163,13 +211,37 @@ export default function Login() {
         navigate("/dashboard");
       }
     } catch (error) {
-      let errorMessage = "An error occurred";
-      try {
-        const errorData = JSON.parse(error.message);
-        errorMessage = Object.values(errorData).flat().join(", ") || errorData.detail || errorMessage;
-      } catch {
-        errorMessage = error.message || errorMessage;
+      // Parse Django validation errors
+      let errorMessage = isLogin ? "Invalid email or password" : "Failed to create account";
+
+      // Try to get error from response data first
+      const errorData = error.response?.data;
+
+      if (errorData) {
+        // Check for field-specific errors (Django returns errors as objects)
+        if (typeof errorData === 'object' && !errorData.detail) {
+          const errors = [];
+          for (const [field, messages] of Object.entries(errorData)) {
+            if (Array.isArray(messages)) {
+              errors.push(...messages);
+            } else if (typeof messages === 'string') {
+              errors.push(messages);
+            }
+          }
+          errorMessage = errors.join(' ') || errorMessage;
+        } else {
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        }
+      } else if (error.message) {
+        // Fallback to parsing error.message if no response data
+        try {
+          const parsedError = JSON.parse(error.message);
+          errorMessage = Object.values(parsedError).flat().join(", ") || parsedError.detail || errorMessage;
+        } catch {
+          errorMessage = error.message || errorMessage;
+        }
       }
+
       toast({
         title: "Error",
         description: errorMessage,

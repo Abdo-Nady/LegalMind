@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LayoutDashboard, FileText, Settings, LogOut, Menu, X, Sparkles, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/Authcontext";
-import { authAPI } from "@/services/api";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -18,23 +17,6 @@ export function DashboardLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, isGuest, user } = useAuth();
-  const [profileData, setProfileData] = useState(null);
-
-  // Load profile data to get avatar
-  useEffect(() => {
-    if (user && !isGuest) {
-      loadProfile();
-    }
-  }, [user, isGuest]);
-
-  const loadProfile = async () => {
-    try {
-      const profile = await authAPI.getCurrentUser();
-      setProfileData(profile);
-    } catch (error) {
-      console.error('Failed to load profile:', error);
-    }
-  };
 
   const handleSignOut = async () => {
     await logout();
@@ -122,9 +104,9 @@ export function DashboardLayout({ children }) {
             <div className="mb-3 px-3 py-2 rounded-lg bg-sidebar-accent/30">
               {/* Avatar */}
               <div className="flex items-center gap-3 mb-2">
-                {profileData?.profile?.avatar_url ? (
+                {user?.profile?.avatar_url ? (
                   <img
-                    src={profileData.profile.avatar_url}
+                    src={user.profile.avatar_url}
                     alt="Profile"
                     className="h-10 w-10 rounded-lg object-cover"
                   />

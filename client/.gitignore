@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+#instrutions
+MIGRATION_GUIDE.md
+QUICK_REFERENCE.md
+API_INTEGRATION_SUMMARY.md
+TESTING_CHECKLIST.md

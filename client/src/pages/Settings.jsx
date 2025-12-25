@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/Authcontext";
 import { Navigate } from "react-router-dom";
-import { authAPI } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
+import { useUploadAvatar, useDeleteAvatar, useUpdateUsername, useChangePassword } from "@/hooks/useAuth";
 
 const settingsSections = [
   { id: "profile", label: "Profile", icon: User },
@@ -23,15 +23,10 @@ const settingsSections = [
 export default function Settings() {
   const [activeSection, setActiveSection] = useState("profile");
   const { user, isGuest, loading, refreshUser } = useAuth();
-  const [profileData, setProfileData] = useState(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [deletingAvatar, setDeletingAvatar] = useState(false);
   const [isGoogleUser, setIsGoogleUser] = useState(false);
 
   // Profile form state
   const [username, setUsername] = useState("");
-  const [savingProfile, setSavingProfile] = useState(false);
 
   // Password change state
   const [oldPassword, setOldPassword] = useState("");
@@ -40,10 +35,15 @@ export default function Settings() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword1, setShowNewPassword1] = useState(false);
   const [showNewPassword2, setShowNewPassword2] = useState(false);
-  const [changingPassword, setChangingPassword] = useState(false);
 
   const fileInputRef = useRef(null);
   const { toast } = useToast();
+
+  // React Query mutations
+  const uploadAvatarMutation = useUploadAvatar();
+  const deleteAvatarMutation = useDeleteAvatar();
+  const updateUsernameMutation = useUpdateUsername();
+  const changePasswordMutation = useChangePassword();
 
   // Redirect guests away from settings
   if (!loading && isGuest) {
@@ -53,25 +53,11 @@ export default function Settings() {
   // Load user profile data
   useEffect(() => {
     if (user && !isGuest) {
-      loadProfile();
-    }
-  }, [user, isGuest]);
-
-  const loadProfile = async () => {
-    try {
-      setLoadingProfile(true);
-      const profile = await authAPI.getCurrentUser();
-      setProfileData(profile);
-      setUsername(profile.username || "");
-
+      setUsername(user.username || "");
       const loginMethod = localStorage.getItem('loginMethod');
       setIsGoogleUser(loginMethod === 'google');
-    } catch (error) {
-      console.error('Failed to load profile:', error);
-    } finally {
-      setLoadingProfile(false);
     }
-  };
+  }, [user, isGuest]);
 
   const handleAvatarUpload = async (event) => {
     const file = event.target.files[0];
@@ -97,29 +83,18 @@ export default function Settings() {
     }
 
     try {
-      setUploadingAvatar(true);
-      await authAPI.uploadAvatar(file);
-      await loadProfile();
-      await refreshUser();
+      await uploadAvatarMutation.mutateAsync(file);
       toast({
         title: "Success",
         description: "Avatar updated successfully!",
       });
     } catch (error) {
-      let errorMessage = "Failed to upload avatar";
-      try {
-        const errorData = JSON.parse(error.message);
-        errorMessage = Object.values(errorData).flat().join(", ") || errorMessage;
-      } catch {
-        errorMessage = error.message || errorMessage;
-      }
       toast({
         title: "Error",
-        description: errorMessage,
+        description: error.response?.data?.detail || error.message || "Failed to upload avatar",
         variant: "destructive",
       });
     } finally {
-      setUploadingAvatar(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -132,29 +107,17 @@ export default function Settings() {
     }
 
     try {
-      setDeletingAvatar(true);
-      await authAPI.deleteAvatar();
-      await loadProfile();
-      await refreshUser();
+      await deleteAvatarMutation.mutateAsync();
       toast({
         title: "Success",
         description: "Avatar deleted successfully!",
       });
     } catch (error) {
-      let errorMessage = "Failed to delete avatar";
-      try {
-        const errorData = JSON.parse(error.message);
-        errorMessage = Object.values(errorData).flat().join(", ") || errorMessage;
-      } catch {
-        errorMessage = error.message || errorMessage;
-      }
       toast({
         title: "Error",
-        description: errorMessage,
+        description: error.response?.data?.detail || error.message || "Failed to delete avatar",
         variant: "destructive",
       });
-    } finally {
-      setDeletingAvatar(false);
     }
   };
 
@@ -170,7 +133,7 @@ export default function Settings() {
       return;
     }
 
-    const hasUsernameChanged = username !== user.username;
+    const hasUsernameChanged = username !== user?.username;
     const hasPasswordChange = oldPassword && newPassword1 && newPassword2;
 
     if (!hasUsernameChanged && !hasPasswordChange) {
@@ -182,11 +145,9 @@ export default function Settings() {
     }
 
     try {
-      setSavingProfile(true);
-
       // Update username if changed
       if (hasUsernameChanged) {
-        await authAPI.updateUsername(username);
+        await updateUsernameMutation.mutateAsync(username);
       }
 
       // Change password if provided
@@ -197,7 +158,6 @@ export default function Settings() {
             description: "New passwords don't match",
             variant: "destructive",
           });
-          setSavingProfile(false);
           return;
         }
 
@@ -207,37 +167,50 @@ export default function Settings() {
             description: "Password must be at least 8 characters long",
             variant: "destructive",
           });
-          setSavingProfile(false);
           return;
         }
 
-        await authAPI.changePassword(oldPassword, newPassword1, newPassword2);
+        await changePasswordMutation.mutateAsync({
+          oldPassword,
+          newPassword1,
+          newPassword2,
+        });
         setOldPassword("");
         setNewPassword1("");
         setNewPassword2("");
       }
 
-      await refreshUser();
-      await loadProfile();
       toast({
         title: "Success",
         description: "Profile updated successfully!",
       });
     } catch (error) {
+      // Parse Django validation errors
+      const errorData = error.response?.data;
       let errorMessage = "Failed to update profile";
-      try {
-        const errorData = JSON.parse(error.message);
-        errorMessage = Object.values(errorData).flat().join(", ") || errorData.detail || errorMessage;
-      } catch {
-        errorMessage = error.message || errorMessage;
+
+      if (errorData) {
+        // Check for field-specific errors (Django returns errors as objects)
+        if (typeof errorData === 'object' && !errorData.detail) {
+          const errors = [];
+          for (const [field, messages] of Object.entries(errorData)) {
+            if (Array.isArray(messages)) {
+              errors.push(...messages);
+            } else if (typeof messages === 'string') {
+              errors.push(messages);
+            }
+          }
+          errorMessage = errors.join(' ') || errorMessage;
+        } else {
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        }
       }
+
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       });
-    } finally {
-      setSavingProfile(false);
     }
   };
 
@@ -263,8 +236,11 @@ export default function Settings() {
     }
 
     try {
-      setChangingPassword(true);
-      await authAPI.changePassword(oldPassword, newPassword1, newPassword2);
+      await changePasswordMutation.mutateAsync({
+        oldPassword,
+        newPassword1,
+        newPassword2,
+      });
       toast({
         title: "Success",
         description: "Password changed successfully!",
@@ -273,24 +249,36 @@ export default function Settings() {
       setNewPassword1("");
       setNewPassword2("");
     } catch (error) {
+      // Parse Django validation errors
+      const errorData = error.response?.data;
       let errorMessage = "Failed to change password";
-      try {
-        const errorData = JSON.parse(error.message);
-        errorMessage = Object.values(errorData).flat().join(", ") || errorData.detail || errorMessage;
-      } catch {
-        errorMessage = error.message || errorMessage;
+
+      if (errorData) {
+        // Check for field-specific errors (Django returns errors as objects)
+        if (typeof errorData === 'object' && !errorData.detail) {
+          const errors = [];
+          for (const [field, messages] of Object.entries(errorData)) {
+            if (Array.isArray(messages)) {
+              errors.push(...messages);
+            } else if (typeof messages === 'string') {
+              errors.push(messages);
+            }
+          }
+          errorMessage = errors.join(' ') || errorMessage;
+        } else {
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        }
       }
+
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       });
-    } finally {
-      setChangingPassword(false);
     }
   };
 
-  if (loading || loadingProfile) {
+  if (loading) {
     return (
       <DashboardLayout>
         <div className="p-8">
@@ -371,10 +359,10 @@ export default function Settings() {
                   <CardContent className="space-y-6">
                     {/* Avatar */}
                     <div className="flex items-center gap-6">
-                      {profileData?.profile?.avatar_url ? (
+                      {user?.avatar_url ? (
                         <div className="relative">
                           <img
-                            src={profileData.profile.avatar_url}
+                            src={user.avatar_url}
                             alt="Profile"
                             className="h-20 w-20 rounded-xl object-cover"
                           />
@@ -383,7 +371,7 @@ export default function Settings() {
                             size="icon"
                             className="absolute -top-2 -right-2 h-6 w-6"
                             onClick={handleDeleteAvatar}
-                            disabled={deletingAvatar}
+                            disabled={deleteAvatarMutation.isPending}
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -406,9 +394,9 @@ export default function Settings() {
                           variant="outline"
                           size="sm"
                           onClick={() => fileInputRef.current?.click()}
-                          disabled={uploadingAvatar}
+                          disabled={uploadAvatarMutation.isPending}
                         >
-                          {uploadingAvatar ? "Uploading..." : "Change Avatar"}
+                          {uploadAvatarMutation.isPending ? "Uploading..." : "Change Avatar"}
                         </Button>
                         <p className="text-xs text-muted-foreground">
                           JPG, PNG, GIF or WEBP. Max 5MB.
@@ -519,8 +507,8 @@ export default function Settings() {
                       )}
 
                       <div className="flex justify-end mt-6">
-                        <Button type="submit" disabled={savingProfile}>
-                          {savingProfile ? "Saving..." : "Save Changes"}
+                        <Button type="submit" disabled={updateUsernameMutation.isPending || changePasswordMutation.isPending}>
+                          {(updateUsernameMutation.isPending || changePasswordMutation.isPending) ? "Saving..." : "Save Changes"}
                         </Button>
                       </div>
                     </form>
@@ -528,7 +516,7 @@ export default function Settings() {
                 </Card>
 
                 {/* Account Information Card */}
-                {profileData && (
+                {user && (
                   <Card>
                     <CardHeader>
                       <div className="flex items-center justify-between">
@@ -545,8 +533,8 @@ export default function Settings() {
                         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
                           <span className="text-sm text-muted-foreground">Account Created</span>
                           <span className="text-sm font-medium text-foreground">
-                            {profileData.profile?.created_at
-                              ? new Date(profileData.profile.created_at).toLocaleDateString()
+                            {user.created_at
+                              ? new Date(user.created_at).toLocaleDateString()
                               : "N/A"}
                           </span>
                         </div>
