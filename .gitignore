@@ -22,6 +22,7 @@ media/
 node_modules/
 client/build/
 client/dist/
+client/.env
 .npm
 .eslintcache
 
