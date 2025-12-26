@@ -45,3 +45,7 @@ htmlcov/
 .coverage
 .pytest_cache/
 coverage/
+
+# Albert's stuff
+Rerference_code/
+CLAUDE.md
