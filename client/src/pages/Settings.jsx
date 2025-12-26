@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "@/contexts/Authcontext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useUploadAvatar, useDeleteAvatar, useUpdateUsername, useChangePassword } from "@/hooks/useAuth";
