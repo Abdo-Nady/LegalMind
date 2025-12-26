@@ -10,7 +10,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { UploadCard } from "@/components/ui/upload-card";
 import { cn } from "@/lib/utils";
-import { documentAPI } from "@/services/api";
+import { queryKeys } from "@/lib/queryClient";
+import { documentService } from "@/services/document.service";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -130,31 +131,31 @@ export default function Dashboard() {
 
   // Fetch documents
   const { data: documents = [], isLoading, error } = useQuery({
-    queryKey: ['documents'],
-    queryFn: documentAPI.list,
+    queryKey: queryKeys.documents.all,
+    queryFn: documentService.list,
   });
 
   // Upload mutation
   const uploadMutation = useMutation({
-    mutationFn: (file) => documentAPI.upload(file),
+    mutationFn: (file) => documentService.upload(file),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.documents.all });
       toast.success('Document uploaded successfully! Processing will begin shortly.');
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to upload document');
+      toast.error(error.response?.data?.error || error.message || 'Failed to upload document');
     },
   });
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: (id) => documentAPI.delete(id),
+    mutationFn: (id) => documentService.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.documents.all });
       toast.success('Document deleted successfully');
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to delete document');
+      toast.error(error.response?.data?.error || error.message || 'Failed to delete document');
     },
   });
 
@@ -259,7 +260,7 @@ export default function Dashboard() {
         {error && (
           <div className="text-center py-16">
             <p className="text-destructive mb-4">{error.message || 'Failed to load documents'}</p>
-            <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['documents'] })}>
+            <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.documents.all })}>
               Try Again
             </Button>
           </div>

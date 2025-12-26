@@ -29,5 +29,11 @@ export const queryKeys = {
     documents: {
         all: ['documents'],
         detail: (id) => ['documents', id],
+        clauses: (id) => ['documents', id, 'clauses'],
+        summary: (id) => ['documents', id, 'summary'],
+    },
+    sessions: {
+        all: ['sessions'],
+        detail: (id) => ['sessions', id],
     },
 };

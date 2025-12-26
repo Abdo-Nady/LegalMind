@@ -18,5 +18,15 @@ export const WORKSPACE_ENDPOINTS = {
 };
 
 export const DOCUMENT_ENDPOINTS = {
-    // Example: UPLOAD: '/documents/upload/',
+    LIST: '/ai/documents/',
+    UPLOAD: '/ai/documents/upload/',
+    DETAIL: (id) => `/ai/documents/${id}/`,
+    CHAT: (id) => `/ai/documents/${id}/chat/`,
+    CLAUSES: (id) => `/ai/documents/${id}/clauses/`,
+    SUMMARY: (id) => `/ai/documents/${id}/summary/`,
+};
+
+export const SESSION_ENDPOINTS = {
+    LIST: '/ai/sessions/',
+    DETAIL: (id) => `/ai/sessions/${id}/`,
 };

@@ -7,7 +7,8 @@ import { WorkspaceLayout } from "@/components/layouts/WorkspaceLayout";
 import { PDFViewer } from "@/components/document/PDFViewer";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { useState } from "react";
-import { documentAPI } from "@/services/api";
+import { queryKeys } from "@/lib/queryClient";
+import { documentService } from "@/services/document.service";
 import { Button } from "@/components/ui/button";
 
 export default function DocumentWorkbench() {
@@ -17,8 +18,8 @@ export default function DocumentWorkbench() {
 
   // Fetch document details
   const { data: document, isLoading, error } = useQuery({
-    queryKey: ['document', id],
-    queryFn: () => documentAPI.get(id),
+    queryKey: queryKeys.documents.detail(id),
+    queryFn: () => documentService.get(id),
     enabled: !!id,
   });
 

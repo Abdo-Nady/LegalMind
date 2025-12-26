@@ -7,7 +7,8 @@ import { MessageBubble } from "@/components/ui/message-bubble";
 import { ThinkingIndicator } from "@/components/ui/spinner";
 import { RiskCard, ActionItemCard } from "@/components/ui/insight-cards";
 import { cn } from "@/lib/utils";
-import { documentAPI } from "@/services/api";
+import { queryKeys } from "@/lib/queryClient";
+import { documentService } from "@/services/document.service";
 import { toast } from "sonner";
 
 export function ChatPanel({ documentId, onCitationClick, className }) {
@@ -19,23 +20,23 @@ export function ChatPanel({ documentId, onCitationClick, className }) {
 
   // Fetch clauses for insights tab
   const { data: clausesData, isLoading: clausesLoading, refetch: refetchClauses } = useQuery({
-    queryKey: ['clauses', documentId],
-    queryFn: () => documentAPI.getClauses(documentId),
+    queryKey: queryKeys.documents.clauses(documentId),
+    queryFn: () => documentService.getClauses(documentId),
     enabled: !!documentId && activeTab === "insights",
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   // Fetch summary
   const { data: summaryData, isLoading: summaryLoading, refetch: refetchSummary } = useQuery({
-    queryKey: ['summary', documentId],
-    queryFn: () => documentAPI.getSummary(documentId),
+    queryKey: queryKeys.documents.summary(documentId),
+    queryFn: () => documentService.getSummary(documentId),
     enabled: !!documentId && activeTab === "notes",
     staleTime: 5 * 60 * 1000,
   });
 
   // Chat mutation
   const chatMutation = useMutation({
-    mutationFn: ({ query }) => documentAPI.chat(documentId, query, sessionId),
+    mutationFn: ({ query }) => documentService.chat(documentId, query, sessionId),
     onSuccess: (data) => {
       // Update session ID for conversation continuity
       if (data.session_id) {
@@ -55,8 +56,7 @@ export function ChatPanel({ documentId, onCitationClick, className }) {
       setMessages((prev) => [...prev, aiMessage]);
     },
     onError: (error) => {
-      toast.error(error.message || 'Failed to get response');
-      // Remove the pending user message indicator
+      toast.error(error.response?.data?.error || error.message || 'Failed to get response');
     },
   });
 
