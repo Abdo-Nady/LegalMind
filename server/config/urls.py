@@ -25,11 +25,11 @@ from rest_framework import permissions
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="MiniERP API",
+        title="DocuMind API",
         default_version="v1",
-        description="API documentation for MiniERP System",
-        contact=openapi.Contact(email="support@minierp.com"),
-        license=openapi.License(name="BSD License"),
+        description="API documentation for DocuMind - AI-Powered Legal Document Intelligence Platform",
+        contact=openapi.Contact(email="support@documind.com"),
+        license=openapi.License(name="MIT License"),
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
@@ -38,6 +38,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/accounts/", include("accounts.urls")),
+    path("api/ai/", include("ai_api.urls")),
     path(
         "swagger/",
         schema_view.with_ui("swagger", cache_timeout=0),

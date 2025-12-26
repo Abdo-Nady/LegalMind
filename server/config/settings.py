@@ -14,8 +14,12 @@ from datetime import timedelta
 import os
 
 from pathlib import Path
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
 
 
 MEDIA_URL = "/media/"
@@ -64,6 +68,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     # local apps
     "accounts",
+    "ai_api",
     "corsheaders",
 ]
 
