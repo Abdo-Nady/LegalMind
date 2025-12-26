@@ -101,12 +101,55 @@ The platform implements a Retrieval-Augmented Generation (RAG) pipeline:
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Python 3.9+
-- Node.js 16+
-- PostgreSQL
-- OpenAI API key
+- Docker and Docker Compose (recommended)
+- OR: Python 3.9+, Node.js 16+, PostgreSQL, Redis
 
-### Installation
+### Option 1: Docker Setup (Recommended)
+
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/documind.git
+cd documind
+```
+
+2. Configure environment variables
+```bash
+cp .env.example .env
+# Edit .env with your configuration:
+# - SECRET_KEY and JWT_SECRET_KEY
+# - OPENAI_API_KEY or GEMINI_API_KEY
+# - Database settings are pre-configured for Docker
+```
+
+3. Build and start all services
+```bash
+docker-compose up --build
+```
+
+4. Access the application
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- Admin Panel: http://localhost:8000/admin
+
+**Useful Docker Commands:**
+```bash
+# Start in background
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Create Django superuser
+docker-compose exec server python manage.py createsuperuser
+
+# Clean restart
+docker-compose down -v && docker-compose up --build
+```
+
+### Option 2: Manual Installation
 
 1. Clone the repository
 ```bash
@@ -116,7 +159,7 @@ cd documind
 
 2. Set up the backend
 ```bash
-cd backend
+cd server
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -129,6 +172,7 @@ cp .env.example .env
 # - DATABASE_URL
 # - OPENAI_API_KEY
 # - JWT_SECRET_KEY
+# - REDIS_URL
 ```
 
 4. Run database migrations
@@ -138,7 +182,7 @@ python manage.py migrate
 
 5. Set up the frontend
 ```bash
-cd ../frontend
+cd ../client
 npm install
 ```
 
@@ -146,17 +190,19 @@ npm install
 
 Backend:
 ```bash
-cd backend
+cd server
 python manage.py runserver
 ```
 
 Frontend:
 ```bash
-cd frontend
-npm start
+cd client
+npm run dev
 ```
 
-The application will be available at `http://localhost:3000`
+The application will be available at:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8000
 
 ## 📖 Usage
 

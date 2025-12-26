@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { LayoutDashboard, FileText, Settings, LogOut, Menu, X, Sparkles, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/Authcontext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },

@@ -31,7 +31,7 @@ services:
     container_name: documind_server
     restart: unless-stopped
     env_file:
-      - .env
+      - ./server/.env
     volumes:
       - ./server:/app
     ports:
@@ -47,6 +47,8 @@ services:
       dockerfile: Dockerfile
     container_name: documind_client
     restart: unless-stopped
+    env_file:
+      - ./client/.env
     volumes:
       - ./client:/app
       - /app/node_modules
