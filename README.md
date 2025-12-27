@@ -114,39 +114,48 @@ cd documind
 
 2. Configure environment variables
 ```bash
+# Root directory (optional - database credentials)
 cp .env.example .env
-# Edit .env with your configuration:
-# - SECRET_KEY and JWT_SECRET_KEY
-# - OPENAI_API_KEY or GEMINI_API_KEY
-# - Database settings are pre-configured for Docker
+
+# Server environment (required)
+cp server/.env.example server/.env
+# Edit server/.env with:
+# - OPENAI_API_KEY (required for AI features)
+# - GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET (for OAuth)
+
+# Client environment (required)
+cp client/.env.example client/.env
+# Edit client/.env with:
+# - VITE_GOOGLE_CLIENT_ID (same as server's Google Client ID)
 ```
 
 3. Build and start all services
 ```bash
-docker-compose up --build
+docker-compose up -d
 ```
 
 4. Access the application
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:8000
+- API Documentation: http://localhost:8000/swagger/
 - Admin Panel: http://localhost:8000/admin
 
 **Useful Docker Commands:**
 ```bash
-# Start in background
-docker-compose up -d
-
 # View logs
 docker-compose logs -f
 
 # Stop services
 docker-compose down
 
-# Create Django superuser
-docker-compose exec server python manage.py createsuperuser
+# Restart a service
+docker-compose restart server
 
-# Clean restart
-docker-compose down -v && docker-compose up --build
+# Create Django superuser
+docker exec -it documind_server python manage.py createsuperuser
+
+# Clean restart (deletes all data)
+docker-compose down -v && docker-compose up -d
 ```
 
 ### Option 2: Manual Installation

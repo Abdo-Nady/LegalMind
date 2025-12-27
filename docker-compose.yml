@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
+  # PostgreSQL Database (for Django data)
   db:
     image: postgres:15-alpine
     container_name: documind_db
@@ -14,6 +14,20 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  # PostgreSQL with pgvector (for AI embeddings)
+  pgvector:
+    image: pgvector/pgvector:pg16
+    container_name: documind_pgvector
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${PGVECTOR_DB:-documind_vectors}
+      POSTGRES_USER: ${PGVECTOR_USER:-postgres}
+      POSTGRES_PASSWORD: ${PGVECTOR_PASSWORD:-postgres}
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
 
   # Redis (for Django Channels WebSocket)
   redis:
@@ -38,6 +52,7 @@ services:
       - "8000:8000"
     depends_on:
       - db
+      - pgvector
       - redis
 
   # React Frontend (Vite)
@@ -59,3 +74,4 @@ services:
 
 volumes:
   postgres_data:
+  pgvector_data:
