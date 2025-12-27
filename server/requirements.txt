@@ -1,4 +1,4 @@
-﻿asgiref==3.11.0
+asgiref==3.11.0
 certifi==2025.11.12
 cffi==2.0.0
 channels==4.3.2
@@ -30,3 +30,14 @@ sqlparse==0.5.4
 tzdata==2025.3
 uritemplate==4.2.0
 urllib3==2.6.2
+
+# LangChain and AI dependencies
+langchain>=0.3.0
+langchain-openai>=0.2.0
+langchain-postgres>=0.0.9
+langchain-community>=0.3.0
+langchain-text-splitters>=0.3.0
+openai>=1.50.0
+pypdf>=5.0.0
+tiktoken>=0.7.0
+psycopg[binary]>=3.1.0

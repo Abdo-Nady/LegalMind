@@ -45,3 +45,6 @@ htmlcov/
 .coverage
 .pytest_cache/
 coverage/
+
+# Albert's stuff
+References/
