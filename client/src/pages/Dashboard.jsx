@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { queryKeys } from "@/lib/queryClient";
 import { documentService } from "@/services/document.service";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -128,11 +129,13 @@ export default function Dashboard() {
   const [view, setView] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
+  const { isGuest, user } = useAuth();
 
-  // Fetch documents
+  // Fetch documents - only if user is authenticated (not guest)
   const { data: documents = [], isLoading, error } = useQuery({
     queryKey: queryKeys.documents.all,
     queryFn: documentService.list,
+    enabled: !isGuest && !!user, // Only fetch if not guest and user exists
   });
 
   // Upload mutation

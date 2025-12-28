@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
     useCurrentUser,
     useLogin as useLoginMutation,
@@ -18,6 +19,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
+    const queryClient = useQueryClient();
     const [isGuest, setIsGuest] = useState(() => {
         return localStorage.getItem('isGuest') === 'true';
     });
@@ -52,6 +54,8 @@ export const AuthProvider = ({ children }) => {
 
     // Guest mode handler
     const setGuestMode = () => {
+        // Clear all React Query cache to prevent showing previous user's data
+        queryClient.clear();
         setIsGuest(true);
         localStorage.setItem('isGuest', 'true');
         localStorage.removeItem('access_token');
