@@ -11,7 +11,8 @@ import Dashboard from "./pages/Dashboard";
 import DocumentWorkbench from "./pages/DocumentWorkbench";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { PublicRoute } from "./components/PublicRoute";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -21,8 +22,12 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
+            {/* <Route path="/" element={<Index />} /> */}
+            <Route path="/" element={<PublicRoute><Index /></PublicRoute>} />
+
+            {/* <Route path="/login" element={<Login />} /> */}
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/documents" element={<Navigate to="/dashboard" replace />} />
             <Route path="/document/:id" element={<ProtectedRoute><DocumentWorkbench /></ProtectedRoute>} />
