@@ -8,5 +8,5 @@ export const ProtectedRoute = ({ children }) => {
         return <div>Loading...</div>; // You can replace with a proper loading component
     }
 
-    return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+    return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
