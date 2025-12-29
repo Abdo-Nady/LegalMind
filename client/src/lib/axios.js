@@ -8,7 +8,7 @@ const axiosInstance = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 15000, // 15 second timeout
+    timeout: 120000, // 120 second timeout (2 minutes) for AI operations
 });
 
 // Token management helpers
