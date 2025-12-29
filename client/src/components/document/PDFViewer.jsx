@@ -26,7 +26,6 @@ export function PDFViewer({ documentId, fileUrl, className, highlightedPage }) {
   }, []);
 
   const onDocumentLoadError = useCallback((error) => {
-    console.error("Error loading PDF:", error);
     setError("Failed to load PDF document");
     setLoading(false);
   }, []);

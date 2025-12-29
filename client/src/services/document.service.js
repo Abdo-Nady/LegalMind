@@ -91,32 +91,3 @@ export const documentService = {
     },
 };
 
-/**
- * Chat Session API Service
- * Manage chat sessions with documents
- */
-export const sessionService = {
-    /**
-     * List all chat sessions
-     */
-    list: async () => {
-        const response = await axiosInstance.get(SESSION_ENDPOINTS.LIST);
-        return response.data;
-    },
-
-    /**
-     * Get a specific session with messages
-     */
-    get: async (id) => {
-        const response = await axiosInstance.get(SESSION_ENDPOINTS.DETAIL(id));
-        return response.data;
-    },
-
-    /**
-     * Delete a session
-     */
-    delete: async (id) => {
-        const response = await axiosInstance.delete(SESSION_ENDPOINTS.DETAIL(id));
-        return response.data;
-    },
-};

@@ -65,7 +65,7 @@ export const authService = {
         try {
             await axiosInstance.post(AUTH_ENDPOINTS.LOGOUT);
         } catch (error) {
-            console.error('Logout error:', error);
+            // Silently handle logout errors - tokens will be cleared anyway
         } finally {
             clearTokens();
         }

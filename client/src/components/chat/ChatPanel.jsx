@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Paperclip, Mic, MessageSquare, FileText, Lightbulb, Loader2 } from "lucide-react";
+import { Send, MessageSquare, FileText, Lightbulb, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MessageBubble } from "@/components/ui/message-bubble";
 import { ThinkingIndicator } from "@/components/ui/spinner";
-import { RiskCard, ActionItemCard } from "@/components/ui/insight-cards";
 import { cn } from "@/lib/utils";
 import { queryKeys } from "@/lib/queryClient";
 import { documentService } from "@/services/document.service";

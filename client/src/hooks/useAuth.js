@@ -29,9 +29,6 @@ export const useLogin = () => {
             // Fetch user data after successful login
             await queryClient.invalidateQueries({ queryKey: queryKeys.auth.currentUser });
         },
-        onError: (error) => {
-            console.error('Login failed:', error);
-        },
     });
 };
 
@@ -47,9 +44,6 @@ export const useRegister = () => {
             // Fetch user data after successful registration
             await queryClient.invalidateQueries({ queryKey: queryKeys.auth.currentUser });
         },
-        onError: (error) => {
-            console.error('Registration failed:', error);
-        },
     });
 };
 
@@ -64,9 +58,6 @@ export const useGoogleLogin = () => {
         onSuccess: async () => {
             // Fetch user data after successful Google login
             await queryClient.invalidateQueries({ queryKey: queryKeys.auth.currentUser });
-        },
-        onError: (error) => {
-            console.error('Google login failed:', error);
         },
     });
 };

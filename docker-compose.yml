@@ -29,7 +29,7 @@ services:
     ports:
       - "5433:5432"
 
-  # Redis (for Django Channels WebSocket)
+  # Redis (for caching)
   redis:
     image: redis:7-alpine
     container_name: documind_redis
