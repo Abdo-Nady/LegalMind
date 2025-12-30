@@ -45,6 +45,7 @@ class DocumentUploadView(APIView):
     """
     parser_classes = (MultiPartParser, FormParser)
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'upload'
 
     def post(self, request):
         serializer = DocumentUploadSerializer(data=request.data)
@@ -140,6 +141,7 @@ class DocumentListView(ListAPIView):
     """
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'read'
 
     def get_queryset(self):
         return Document.objects.filter(user=self.request.user)
@@ -154,6 +156,7 @@ class DocumentDetailView(RetrieveDestroyAPIView):
     """
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'read'
 
     def get_queryset(self):
         return Document.objects.filter(user=self.request.user)
@@ -181,6 +184,7 @@ class DocumentChatView(APIView):
     }
     """
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'chat'
 
     def post(self, request, pk):
         # Validate request
@@ -283,6 +287,7 @@ class DocumentClauseDetectionView(APIView):
     Detect and analyze legal clauses in a document.
     """
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'ai_analysis'
 
     def post(self, request, pk):
         try:
@@ -329,6 +334,7 @@ class DocumentSummaryView(APIView):
     Generate an executive summary of a document.
     """
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'ai_analysis'
 
     def post(self, request, pk):
         try:

@@ -50,3 +50,9 @@ coverage/
 References/
 
 tips
+
+# testing files
+#ddos attack before implementing security features
+locustfile.py
+stress_test.py
+stress_test.sh
