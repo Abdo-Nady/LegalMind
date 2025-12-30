@@ -19,11 +19,21 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env file
-load_dotenv(BASE_DIR / '.env')
+load_dotenv(BASE_DIR / ".env")
 
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Redis Cache Configuration for Rate Limiting
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://redis:6379/1",  # Use DB 1 for rate limiting
+        "KEY_PREFIX": "documind_ratelimit",
+        "TIMEOUT": 3600,  # 1 hour default timeout
+    }
+}
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
@@ -110,6 +120,25 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
+    # Rate Limiting Configuration (temporarily disabled)
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        # Global rates
+        "anon": "20/minute",  # Anonymous/guest users by ip
+        "user": "50/minute",  # Authenticated users
+        # AI endpoints (resource-intensive) | we need to make it stricter in deployment
+        "upload": "10/hour",  # Document upload
+        "chat": "30/minute",  # AI chat
+        "ai_analysis": "20/hour",  # Clause detection & summary
+        # Auth endpoints
+        "dj_rest_auth": "30/minute",  # dj-rest-auth | we need to make it stricter in deployment
+        # Standard CRUD
+        "read": "50/minute",  # List/detail views
+    },
 }
 
 REST_AUTH = {
