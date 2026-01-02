@@ -128,4 +128,32 @@ export const authService = {
         const response = await axiosInstance.delete(AUTH_ENDPOINTS.AVATAR_DELETE);
         return response.data;
     },
+
+    /**
+     * Request password reset email
+     * @param {string} email - User's email address
+     */
+    requestPasswordReset: async (email) => {
+        const response = await axiosInstance.post(AUTH_ENDPOINTS.PASSWORD_RESET, {
+            email,
+        });
+        return response.data;
+    },
+
+    /**
+     * Confirm password reset with token
+     * @param {string} uid - User ID from reset link
+     * @param {string} token - Reset token from email
+     * @param {string} newPassword1 - New password
+     * @param {string} newPassword2 - Confirm new password
+     */
+    confirmPasswordReset: async ({ uid, token, newPassword1, newPassword2 }) => {
+        const response = await axiosInstance.post(AUTH_ENDPOINTS.PASSWORD_RESET_CONFIRM, {
+            uid,
+            token,
+            new_password1: newPassword1,
+            new_password2: newPassword2,
+        });
+        return response.data;
+    },
 };

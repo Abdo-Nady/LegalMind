@@ -9,6 +9,8 @@ export const AUTH_ENDPOINTS = {
     AVATAR_UPLOAD: '/accounts/profile/avatar/',
     AVATAR_DELETE: '/accounts/profile/avatar/',
     CHANGE_PASSWORD: '/accounts/password/change/',
+    PASSWORD_RESET: '/accounts/password/reset/',
+    PASSWORD_RESET_CONFIRM: '/accounts/password/reset/confirm/',
 };
 
 // Add more endpoint categories as your app grows

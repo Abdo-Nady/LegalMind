@@ -158,6 +158,7 @@ REST_AUTH = {
     "JWT_AUTH_REFRESH_COOKIE": "jwt-refresh-token",
     "USER_DETAILS_SERIALIZER": "accounts.serializers.CustomUserDetailsSerializer",
     "REGISTER_SERIALIZER": "accounts.serializers.CustomRegisterSerializer",
+    "PASSWORD_RESET_SERIALIZER": "accounts.serializers.CustomPasswordResetSerializer",
 }
 
 SIMPLE_JWT = {
@@ -217,6 +218,7 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Password Reset Configuration
 PASSWORD_RESET_TIMEOUT = 86400  # 24 hours in seconds
 DJANGO_REST_PASSWORDRESET_NO_INFORMATION_LEAKAGE = True  # Don't reveal if email exists
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')  # Frontend URL for password reset links
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {

@@ -7,6 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { queryClient } from "@/lib/queryClient";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import DocumentWorkbench from "./pages/DocumentWorkbench";
 import Settings from "./pages/Settings";
@@ -27,6 +29,8 @@ const App = () => (
 
             {/* <Route path="/login" element={<Login />} /> */}
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+            <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
 
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/documents" element={<Navigate to="/dashboard" replace />} />

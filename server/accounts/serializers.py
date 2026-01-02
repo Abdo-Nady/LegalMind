@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from dj_rest_auth.serializers import UserDetailsSerializer
+from dj_rest_auth.serializers import UserDetailsSerializer, PasswordResetSerializer
 from .models import User, UserProfile
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -168,3 +169,72 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.save()
 
         return user
+
+
+class CustomPasswordResetSerializer(PasswordResetSerializer):
+    """
+    Custom Password Reset Serializer that uses frontend URL for reset link
+    """
+
+    def save(self):
+        """Override save to use custom email sending with frontend URL"""
+        request = self.context.get('request')
+        email = self.validated_data['email']
+
+        # Import here to avoid circular imports
+        from django.contrib.auth.tokens import default_token_generator
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        from django.core.mail import send_mail
+        from django.template.loader import render_to_string
+
+        # Get user by email
+        UserModel = get_user_model()
+        try:
+            user = UserModel.objects.get(email=email)
+        except UserModel.DoesNotExist:
+            # Don't reveal if email exists - just return silently
+            return email
+
+        # Generate token and uid
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+        # Build reset URL with frontend domain
+        protocol = 'https' if settings.FRONTEND_URL.startswith('https') else 'http'
+        domain = settings.FRONTEND_URL.replace('http://', '').replace('https://', '')
+
+        # Context for email template
+        context = {
+            'user': user,
+            'email': user.email,
+            'domain': domain,
+            'protocol': protocol,
+            'uid': uid,
+            'token': token,
+        }
+
+        # Render email templates
+        subject = 'Password Reset Request - DocuMind'
+        html_message = render_to_string('registration/password_reset_email.html', context)
+        text_message = render_to_string('registration/password_reset_email.txt', context)
+
+        # Send email
+        try:
+            send_mail(
+                subject=subject,
+                message=text_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+        except Exception as e:
+            # Log the error but don't reveal it to the user
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Failed to send password reset email: {str(e)}")
+            # Still return success to not reveal if email exists
+            # In production, you might want to use a task queue like Celery
+
+        return email
