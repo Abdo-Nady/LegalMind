@@ -7,6 +7,8 @@ Provides endpoints for:
 - Legal clause detection
 - Document summarization
 """
+import os
+
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, RetrieveDestroyAPIView
 from rest_framework.response import Response
@@ -55,7 +57,9 @@ class DocumentUploadView(APIView):
 
             # Set title from filename if not provided
             if not doc.title:
-                doc.title = doc.file.name.replace('.pdf', '').replace('_', ' ').title()
+                # Extract just the filename without the path
+                filename = os.path.basename(doc.file.name)
+                doc.title = filename.replace('.pdf', '').replace('_', ' ').title()
                 doc.save()
 
             # Queue PDF processing task asynchronously
