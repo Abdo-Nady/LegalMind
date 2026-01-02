@@ -85,15 +85,24 @@ class DocumentUploadView(APIView):
 class DocumentListView(ListAPIView):
     """
     GET /api/ai/documents/
+    GET /api/ai/documents/?search=query
 
     List all documents for the authenticated user.
+    Supports optional 'search' query parameter to filter by title.
     """
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
     throttle_scope = 'read'
 
     def get_queryset(self):
-        return Document.objects.filter(user=self.request.user)
+        queryset = Document.objects.filter(user=self.request.user)
+
+        # Support search query parameter
+        search_query = self.request.query_params.get('search', None)
+        if search_query:
+            queryset = queryset.filter(title__icontains=search_query)
+
+        return queryset.order_by('-uploaded_at')
 
 
 class DocumentDetailView(RetrieveDestroyAPIView):

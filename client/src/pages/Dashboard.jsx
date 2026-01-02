@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -129,13 +129,23 @@ function EmptyState() {
 export default function Dashboard() {
   const [view, setView] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const queryClient = useQueryClient();
   const { isGuest, user } = useAuth();
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   // Fetch documents - only if user is authenticated (not guest)
   const { data: documents = [], isLoading, error } = useQuery({
-    queryKey: queryKeys.documents.all,
-    queryFn: documentService.list,
+    queryKey: [...queryKeys.documents.all, debouncedSearch],
+    queryFn: () => documentService.list(debouncedSearch),
     enabled: !isGuest && !!user, // Only fetch if not guest and user exists
   });
 
@@ -190,10 +200,6 @@ export default function Dashboard() {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 },
   };
-
-  const filteredDocuments = documents.filter((doc) =>
-    doc.title?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <DashboardLayout>
@@ -289,7 +295,7 @@ export default function Dashboard() {
                 : "grid-cols-1"
             )}
           >
-            {filteredDocuments.map((doc) => (
+            {documents.map((doc) => (
               <motion.div key={doc.id} variants={item}>
                 <DocumentCard doc={doc} onDelete={handleDelete} />
               </motion.div>
@@ -298,7 +304,7 @@ export default function Dashboard() {
         )}
 
         {/* No search results */}
-        {!isLoading && !error && documents.length > 0 && filteredDocuments.length === 0 && (
+        {!isLoading && !error && documents.length === 0 && debouncedSearch && (
           <div className="text-center py-16">
             <p className="text-muted-foreground">No documents match your search</p>
           </div>

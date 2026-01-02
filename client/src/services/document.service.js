@@ -8,9 +8,14 @@ import { DOCUMENT_ENDPOINTS, SESSION_ENDPOINTS } from '@/lib/api-endpoints';
 export const documentService = {
     /**
      * List all documents for the authenticated user
+     * @param {string} searchQuery - Optional search query to filter documents by title
      */
-    list: async () => {
-        const response = await axiosInstance.get(DOCUMENT_ENDPOINTS.LIST);
+    list: async (searchQuery = '') => {
+        const params = {};
+        if (searchQuery) {
+            params.search = searchQuery;
+        }
+        const response = await axiosInstance.get(DOCUMENT_ENDPOINTS.LIST, { params });
         return response.data;
     },
 
