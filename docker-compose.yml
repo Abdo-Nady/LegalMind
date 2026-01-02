@@ -41,6 +41,23 @@ services:
       - db
       - redis
 
+  # Celery Worker for async tasks
+  celery_worker:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: documind_celery_worker
+    restart: unless-stopped
+    command: celery -A config worker --loglevel=info
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server:/app
+    depends_on:
+      - db
+      - redis
+      - server
+
   # React Frontend (Vite)
   client:
     build:

@@ -6,14 +6,16 @@ import { GripVertical, Loader2, AlertCircle } from "lucide-react";
 import { WorkspaceLayout } from "@/components/layouts/WorkspaceLayout";
 import { PDFViewer } from "@/components/document/PDFViewer";
 import { ChatPanel } from "@/components/chat/ChatPanel";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { queryKeys } from "@/lib/queryClient";
 import { documentService } from "@/services/document.service";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function DocumentWorkbench() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [highlightedPage, setHighlightedPage] = useState();
 
   // Fetch document details
@@ -22,6 +24,28 @@ export default function DocumentWorkbench() {
     queryFn: () => documentService.get(id),
     enabled: !!id,
   });
+
+  // Poll for processing status
+  useEffect(() => {
+    if (!document || document.status !== 'processing') {
+      return; // Only poll if document is processing
+    }
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const updatedDoc = await documentService.get(id);
+
+        // If status changed, invalidate query to refresh
+        if (updatedDoc.status !== 'processing') {
+          queryClient.invalidateQueries({ queryKey: queryKeys.documents.detail(id) });
+        }
+      } catch (error) {
+        console.error('Failed to poll document status:', error);
+      }
+    }, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [document, id, queryClient]);
 
   const handleCitationClick = (page) => {
     setHighlightedPage(page);
@@ -60,12 +84,19 @@ export default function DocumentWorkbench() {
   // Document not ready
   if (document?.status === 'processing') {
     return (
-      <WorkspaceLayout documentTitle={document.title}>
+      <WorkspaceLayout documentTitle={document.title} documentStatus="processing">
         <div className="h-full flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-accent mx-auto mb-4" />
-            <p className="text-foreground font-medium mb-2">Document is being processed</p>
-            <p className="text-muted-foreground">This may take a few moments. Please wait...</p>
+          <div className="text-center max-w-md">
+            <Loader2 className="h-12 w-12 animate-spin text-accent mx-auto mb-4" />
+            <p className="text-foreground font-medium text-lg mb-2">Processing Your Document</p>
+            <p className="text-muted-foreground mb-4">
+              We're extracting text, analyzing content, and generating embeddings.
+              This page will automatically refresh when ready.
+            </p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 rounded-lg">
+              <div className="h-2 w-2 bg-accent rounded-full animate-pulse"></div>
+              <span className="text-sm text-accent">Checking status every 3 seconds...</span>
+            </div>
           </div>
         </div>
       </WorkspaceLayout>
@@ -74,7 +105,7 @@ export default function DocumentWorkbench() {
 
   if (document?.status === 'failed') {
     return (
-      <WorkspaceLayout documentTitle={document.title}>
+      <WorkspaceLayout documentTitle={document.title} documentStatus="failed">
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
             <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-4" />

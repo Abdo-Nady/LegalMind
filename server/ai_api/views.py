@@ -7,7 +7,6 @@ Provides endpoints for:
 - Legal clause detection
 - Document summarization
 """
-from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, RetrieveDestroyAPIView
 from rest_framework.response import Response
@@ -15,9 +14,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from langchain_community.document_loaders import PyPDFLoader
-
-from .models import Document, DocumentChunk, ChatSession, ChatMessage
+from .models import Document, ChatSession, ChatMessage
 from .serializers import (
     DocumentSerializer,
     DocumentUploadSerializer,
@@ -27,13 +24,13 @@ from .serializers import (
     ChatResponseSerializer,
 )
 from .langchain_config import (
-    get_text_splitter,
     get_document_vector_store,
     get_legal_rag_chain,
     get_clause_detection_chain,
     get_summary_chain,
     delete_document_vectors,
 )
+from .tasks import process_pdf_document
 
 
 class DocumentUploadView(APIView):
@@ -61,17 +58,17 @@ class DocumentUploadView(APIView):
                 doc.title = doc.file.name.replace('.pdf', '').replace('_', ' ').title()
                 doc.save()
 
-            # Process the PDF
-            self._process_pdf(doc)
+            # Queue PDF processing task asynchronously
+            process_pdf_document.delay(doc.id)
 
-            # Return updated document info
+            # Return immediately with document info
             return Response(
                 DocumentSerializer(doc).data,
                 status=status.HTTP_201_CREATED
             )
 
         except Exception as e:
-            # Mark document as failed if processing errors occur
+            # Mark document as failed if errors occur
             if 'doc' in locals():
                 doc.status = 'failed'
                 doc.save()
@@ -79,58 +76,6 @@ class DocumentUploadView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-    def _process_pdf(self, doc: Document):
-        """
-        Process PDF: extract text, chunk, embed, and store.
-
-        Args:
-            doc: Document model instance
-        """
-        # Load PDF
-        loader = PyPDFLoader(doc.file.path)
-        pages = loader.load()
-
-        # Update page count
-        doc.page_count = len(pages)
-
-        # Sanitize text content - remove NUL bytes that PostgreSQL can't handle
-        for page in pages:
-            page.page_content = page.page_content.replace('\x00', '')
-
-        # Split into chunks
-        text_splitter = get_text_splitter()
-        chunks = text_splitter.split_documents(pages)
-
-        # Add metadata to chunks
-        for i, chunk in enumerate(chunks):
-            # Sanitize chunk content as well
-            chunk.page_content = chunk.page_content.replace('\x00', '')
-
-            page_num = chunk.metadata.get('page', 0) + 1  # 1-indexed
-            chunk.metadata.update({
-                "document_id": doc.id,
-                "document_title": doc.title,
-                "chunk_index": i,
-                "page_number": page_num,
-            })
-
-            # Save chunk to database for reference
-            DocumentChunk.objects.create(
-                document=doc,
-                content=chunk.page_content,
-                chunk_index=i,
-                page_number=page_num,
-            )
-
-        # Store in vector database
-        vector_store = get_document_vector_store(doc.id)
-        vector_store.add_documents(chunks)
-
-        # Mark as ready
-        doc.status = 'ready'
-        doc.processed_at = timezone.now()
-        doc.save()
 
 
 class DocumentListView(ListAPIView):

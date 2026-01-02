@@ -56,3 +56,6 @@ tips
 locustfile.py
 stress_test.py
 stress_test.sh
+
+# temporary files
+temp/

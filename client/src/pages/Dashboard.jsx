@@ -14,6 +14,7 @@ import { queryKeys } from "@/lib/queryClient";
 import { documentService } from "@/services/document.service";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDocumentPolling } from "@/hooks/useDocumentPolling";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -137,6 +138,9 @@ export default function Dashboard() {
     queryFn: documentService.list,
     enabled: !isGuest && !!user, // Only fetch if not guest and user exists
   });
+
+  // Poll for processing documents
+  useDocumentPolling(documents);
 
   // Upload mutation
   const uploadMutation = useMutation({

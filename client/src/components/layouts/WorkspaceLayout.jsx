@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Download, Share2, MoreHorizontal, Sparkles } from "lucide-react";
+import { ArrowLeft, Download, Share2, MoreHorizontal, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-export function WorkspaceLayout({ children, documentTitle = "Untitled Document", onExport, onShare, }) {
+export function WorkspaceLayout({ children, documentTitle = "Untitled Document", documentStatus = "ready", onExport, onShare, }) {
     return (<div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="h-14 border-b border-border bg-card flex items-center justify-between px-4 flex-shrink-0">
@@ -24,8 +24,19 @@ export function WorkspaceLayout({ children, documentTitle = "Untitled Document",
               </h1>
             </div>
           </div>
-          
-          <Badge variant="ready">Ready</Badge>
+
+          {documentStatus === "processing" ? (
+            <Badge variant="processing">
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              Processing
+            </Badge>
+          ) : documentStatus === "ready" ? (
+            <Badge variant="success">Ready</Badge>
+          ) : documentStatus === "failed" ? (
+            <Badge variant="danger">Failed</Badge>
+          ) : (
+            <Badge variant="outline">Uploaded</Badge>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
