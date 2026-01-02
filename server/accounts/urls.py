@@ -3,6 +3,8 @@ from dj_rest_auth.views import (
     LoginView,
     LogoutView,
     UserDetailsView,
+    PasswordResetView,
+    PasswordResetConfirmView,
 )
 from dj_rest_auth.registration.views import RegisterView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
@@ -44,6 +46,8 @@ urlpatterns = [
     path("token/verify/", TokenVerifyView.as_view(), name="token-verify"),
     # Password Management
     path("password/change/", ChangePasswordView.as_view(), name="change-password"),
+    path("password/reset/", PasswordResetView.as_view(), name="password-reset"),
+    path("password/reset/confirm/", PasswordResetConfirmView.as_view(), name="password-reset-confirm"),
     # Profile & Avatar
     path("profile/", UserProfileView.as_view(), name="user-profile"),
     path(

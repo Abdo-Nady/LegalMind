@@ -111,7 +111,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -203,6 +203,20 @@ ACCOUNT_ADAPTER = "accounts.adapters.CustomAccountAdapter"
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_EMAIL_REQUIRED = True
+
+# Email Configuration (Brevo/Sendinblue SMTP)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp-relay.brevo.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = f"{os.getenv('DEFAULT_FROM_NAME', 'DocuMind')} <{os.getenv('DEFAULT_FROM_EMAIL', 'noreply@documind.com')}>"
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Password Reset Configuration
+PASSWORD_RESET_TIMEOUT = 86400  # 24 hours in seconds
+DJANGO_REST_PASSWORDRESET_NO_INFORMATION_LEAKAGE = True  # Don't reveal if email exists
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
