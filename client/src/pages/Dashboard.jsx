@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { FileText, MoreVertical, Calendar, AlertTriangle, CheckCircle, Clock, Search, Filter, Grid3X3, List, Trash2, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { documentService } from "@/services/document.service";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDocumentPolling } from "@/hooks/useDocumentPolling";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-function DocumentCard({ doc, onDelete }) {
+function DocumentCard({ doc, onDelete, t, isRTL }) {
   const riskConfig = {
     high: { icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10" },
     medium: { icon: Clock, color: "text-warning", bg: "bg-warning/10" },
@@ -54,7 +56,7 @@ function DocumentCard({ doc, onDelete }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link to={`/document/${doc.id}`}>Open Document</Link>
+                <Link to={`/document/${doc.id}`}>{t("dashboard.openDocument")}</Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
@@ -63,8 +65,8 @@ function DocumentCard({ doc, onDelete }) {
                   onDelete(doc.id);
                 }}
               >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                <Trash2 className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                {t("common.delete")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -83,7 +85,7 @@ function DocumentCard({ doc, onDelete }) {
             {doc.page_count && (
               <>
                 <span className="text-border">•</span>
-                <span>{doc.page_count} pages</span>
+                <span>{doc.page_count} {t("common.pages")}</span>
               </>
             )}
           </div>
@@ -95,15 +97,15 @@ function DocumentCard({ doc, onDelete }) {
             </Badge>
             {doc.status === "processing" ? (
               <Badge variant="processing">
-                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                Processing
+                <Loader2 className={`h-3 w-3 animate-spin ${isRTL ? 'ml-1' : 'mr-1'}`} />
+                {t("dashboard.documentStatus.processing")}
               </Badge>
             ) : doc.status === "ready" ? (
-              <Badge variant="success">Ready</Badge>
+              <Badge variant="success">{t("dashboard.documentStatus.ready")}</Badge>
             ) : doc.status === "failed" ? (
-              <Badge variant="danger">Failed</Badge>
+              <Badge variant="danger">{t("dashboard.documentStatus.failed")}</Badge>
             ) : (
-              <Badge variant="outline">Uploaded</Badge>
+              <Badge variant="outline">{t("dashboard.documentStatus.uploaded")}</Badge>
             )}
           </div>
         </Link>
@@ -112,21 +114,23 @@ function DocumentCard({ doc, onDelete }) {
   );
 }
 
-function EmptyState() {
+function EmptyState({ t }) {
   return (
     <div className="text-center py-16">
       <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
         <FileText className="h-8 w-8 text-muted-foreground" />
       </div>
-      <h3 className="font-medium text-foreground mb-2">No documents yet</h3>
+      <h3 className="font-medium text-foreground mb-2">{t("dashboard.noDocuments")}</h3>
       <p className="text-muted-foreground mb-4">
-        Upload your first legal document to get started with AI-powered analysis
+        {t("dashboard.noDocumentsMessage")}
       </p>
     </div>
   );
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
   const [view, setView] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -157,10 +161,10 @@ export default function Dashboard() {
     mutationFn: (file) => documentService.upload(file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.documents.all });
-      toast.success('Document uploaded successfully! Processing will begin shortly.');
+      toast.success(t('toast.documentUploaded'));
     },
     onError: (error) => {
-      toast.error(error.response?.data?.error || error.message || 'Failed to upload document');
+      toast.error(error.response?.data?.error || error.message || t('upload.failed'));
     },
   });
 
@@ -169,10 +173,10 @@ export default function Dashboard() {
     mutationFn: (id) => documentService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.documents.all });
-      toast.success('Document deleted successfully');
+      toast.success(t('toast.documentDeleted'));
     },
     onError: (error) => {
-      toast.error(error.response?.data?.error || error.message || 'Failed to delete document');
+      toast.error(error.response?.data?.error || error.message || t('upload.deleteFailed'));
     },
   });
 
@@ -181,7 +185,7 @@ export default function Dashboard() {
   };
 
   const handleDelete = (id) => {
-    if (confirm('Are you sure you want to delete this document?')) {
+    if (confirm(t('dashboard.deleteConfirm'))) {
       deleteMutation.mutate(id);
     }
   };
@@ -207,10 +211,10 @@ export default function Dashboard() {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="font-serif text-3xl text-foreground mb-2">
-            Document Dashboard
+            {t("dashboard.title")}
           </h1>
           <p className="text-muted-foreground">
-            Analyze and manage your legal documents with AI-powered insights
+            {t("dashboard.subtitle")}
           </p>
         </motion.div>
 
@@ -226,17 +230,17 @@ export default function Dashboard() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className={`absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground ${isRTL ? 'right-3' : 'left-3'}`} />
               <Input
-                placeholder="Search documents..."
+                placeholder={t("dashboard.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-80"
+                className={`w-80 ${isRTL ? 'pr-10' : 'pl-10'}`}
               />
             </div>
             <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
+              <Filter className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+              {t("dashboard.filters")}
             </Button>
           </div>
 
@@ -272,15 +276,15 @@ export default function Dashboard() {
         {/* Error State */}
         {error && (
           <div className="text-center py-16">
-            <p className="text-destructive mb-4">{error.message || 'Failed to load documents'}</p>
+            <p className="text-destructive mb-4">{error.message || t('dashboard.failedToLoad')}</p>
             <Button onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.documents.all })}>
-              Try Again
+              {t('common.tryAgain')}
             </Button>
           </div>
         )}
 
         {/* Empty State */}
-        {!isLoading && !error && documents.length === 0 && <EmptyState />}
+        {!isLoading && !error && documents.length === 0 && <EmptyState t={t} />}
 
         {/* Documents Grid */}
         {!isLoading && !error && documents.length > 0 && (
@@ -297,7 +301,7 @@ export default function Dashboard() {
           >
             {documents.map((doc) => (
               <motion.div key={doc.id} variants={item}>
-                <DocumentCard doc={doc} onDelete={handleDelete} />
+                <DocumentCard doc={doc} onDelete={handleDelete} t={t} isRTL={isRTL} />
               </motion.div>
             ))}
           </motion.div>
@@ -306,7 +310,7 @@ export default function Dashboard() {
         {/* No search results */}
         {!isLoading && !error && documents.length === 0 && debouncedSearch && (
           <div className="text-center py-16">
-            <p className="text-muted-foreground">No documents match your search</p>
+            <p className="text-muted-foreground">{t('dashboard.noSearchResults')}</p>
           </div>
         )}
       </div>

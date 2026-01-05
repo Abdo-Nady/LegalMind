@@ -1,14 +1,19 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Eye, EyeOff, Sparkles, ArrowRight, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 export default function Login() {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -52,15 +57,15 @@ export default function Login() {
       localStorage.setItem('loginMethod', 'google');
 
       toast({
-        title: "Success",
-        description: "Logged in with Google successfully!",
+        title: t("common.success"),
+        description: t("toast.loginGoogleSuccess"),
       });
 
       // Force navigation using window.location
       window.location.href = "/dashboard";
     } catch (error) {
       // Parse Django validation errors
-      let errorMessage = "Failed to sign in with Google";
+      let errorMessage = t("auth.googleSignInFailed");
 
       // Try to get error from response data first
       const errorData = error.response?.data;
@@ -91,7 +96,7 @@ export default function Login() {
       }
 
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -119,15 +124,15 @@ export default function Login() {
                   localStorage.setItem('loginMethod', 'google');
 
                   toast({
-                    title: "Success",
-                    description: "Logged in with Google successfully!",
+                    title: t("common.success"),
+                    description: t("toast.loginGoogleSuccess"),
                   });
 
                   // Navigate immediately
                   navigate("/dashboard");
                 } catch (error) {
                   // Parse Django validation errors
-                  let errorMessage = "Failed to sign in with Google";
+                  let errorMessage = t("auth.googleSignInFailed");
 
                   // Try to get error from response data first
                   const errorData = error.response?.data;
@@ -158,7 +163,7 @@ export default function Login() {
                   }
 
                   toast({
-                    title: "Error",
+                    title: t("common.error"),
                     description: errorMessage,
                     variant: "destructive",
                   });
@@ -172,8 +177,8 @@ export default function Login() {
       });
     } else {
       toast({
-        title: "Error",
-        description: "Google Sign-In is not loaded. Please refresh the page.",
+        title: t("common.error"),
+        description: t("auth.googleNotLoaded"),
         variant: "destructive",
       });
     }
@@ -188,15 +193,15 @@ export default function Login() {
         await login(email, password);
         localStorage.setItem('loginMethod', 'email');
         toast({
-          title: "Success",
-          description: "Logged in successfully!",
+          title: t("common.success"),
+          description: t("toast.loginSuccess"),
         });
         navigate("/dashboard");
       } else {
         if (password !== password2) {
           toast({
-            title: "Error",
-            description: "Passwords don't match",
+            title: t("common.error"),
+            description: t("auth.passwordsDontMatch"),
             variant: "destructive",
           });
           setLoading(false);
@@ -205,14 +210,14 @@ export default function Login() {
         await register(username, email, password, password2);
         localStorage.setItem('loginMethod', 'email');
         toast({
-          title: "Success",
-          description: "Account created successfully!",
+          title: t("common.success"),
+          description: t("toast.accountCreated"),
         });
         navigate("/dashboard");
       }
     } catch (error) {
       // Parse Django validation errors
-      let errorMessage = isLogin ? "Invalid email or password" : "Failed to create account";
+      let errorMessage = isLogin ? t("auth.invalidCredentials") : t("auth.accountCreationFailed");
 
       // Try to get error from response data first
       const errorData = error.response?.data;
@@ -243,7 +248,7 @@ export default function Login() {
       }
 
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -273,21 +278,20 @@ export default function Login() {
             </div>
 
             <h1 className="font-serif text-5xl leading-tight mb-6">
-              Intelligent Document
+              {t("auth.heroTitle")}
               <br />
-              <span className="text-gradient-gold">Analysis</span>
+              <span className="text-gradient-gold">{t("auth.heroTitleHighlight")}</span>
             </h1>
 
             <p className="text-lg text-primary-foreground/80 max-w-md mb-8">
-              Transform how you review contracts and legal documents with
-              AI-powered insights, risk detection, and intelligent chat.
+              {t("auth.heroSubtitle")}
             </p>
 
             <div className="flex flex-col gap-4">
               {[
-                "Instant risk assessment and clause analysis",
-                "AI-powered Q&A with document citations",
-                "Secure, enterprise-grade encryption",
+                t("auth.features.riskAssessment"),
+                t("auth.features.aiQA"),
+                t("auth.features.encryption"),
               ].map((feature, idx) => (
                 <motion.div key={idx} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + idx * 0.1 }} className="flex items-center gap-3">
                   <div className="h-2 w-2 rounded-full bg-secondary" />
@@ -300,7 +304,7 @@ export default function Login() {
           {/* Trust Badges */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="absolute bottom-16 left-16">
             <p className="text-sm text-primary-foreground/60 mb-4">
-              Trusted by leading law firms
+              {t("auth.trustedBy")}
             </p>
             <div className="flex items-center gap-6 opacity-60">
               <div className="font-serif text-xl">Baker & Partners</div>
@@ -325,10 +329,10 @@ export default function Login() {
           {/* Tabs */}
           <div className="flex mb-8 bg-muted rounded-xl p-1">
             <button onClick={() => setIsLogin(true)} className={cn("flex-1 py-3 text-sm font-medium rounded-lg transition-all", isLogin ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
-              Sign In
+              {t("common.signIn")}
             </button>
             <button onClick={() => setIsLogin(false)} className={cn("flex-1 py-3 text-sm font-medium rounded-lg transition-all", !isLogin ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
-              Sign Up
+              {t("common.signUp")}
             </button>
           </div>
 
@@ -336,12 +340,12 @@ export default function Login() {
           <motion.form key={isLogin ? "login" : "signup"} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onSubmit={handleSubmit} className="space-y-5">
             <div>
               <h2 className="font-serif text-2xl text-foreground mb-2">
-                {isLogin ? "Welcome back" : "Create your account"}
+                {isLogin ? t("auth.welcomeBack") : t("auth.createAccount")}
               </h2>
               <p className="text-muted-foreground">
                 {isLogin
-                  ? "Enter your credentials to access your documents"
-                  : "Start your free trial with full access"}
+                  ? t("auth.enterCredentials")
+                  : t("auth.startTrial")}
               </p>
             </div>
 
@@ -364,7 +368,7 @@ export default function Login() {
                       <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                       <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                     </svg>
-                    Google
+                    {t("auth.googleSignIn")}
                   </>
                 )}
               </Button>
@@ -376,7 +380,7 @@ export default function Login() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with email
+                  {t("auth.orContinueWith")}
                 </span>
               </div>
             </div>
@@ -386,7 +390,7 @@ export default function Login() {
               <div className="relative">
                 <Input
                   type="text"
-                  placeholder="Username"
+                  placeholder={t("auth.username")}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required={!isLogin}
@@ -396,15 +400,15 @@ export default function Login() {
 
             {/* Email */}
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input type="email" placeholder="Email address" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10" required />
+              <Mail className={`absolute top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground ${isRTL ? 'right-3' : 'left-3'}`} />
+              <Input type="email" placeholder={t("auth.email")} value={email} onChange={(e) => setEmail(e.target.value)} className={isRTL ? 'pr-10' : 'pl-10'} required />
             </div>
 
             {/* Password */}
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input type={showPassword ? "text" : "password"} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 pr-10" required />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <Lock className={`absolute top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground ${isRTL ? 'right-3' : 'left-3'}`} />
+              <Input type={showPassword ? "text" : "password"} placeholder={t("auth.password")} value={password} onChange={(e) => setPassword(e.target.value)} className={isRTL ? 'pr-10 pl-10' : 'pl-10 pr-10'} required />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className={`absolute top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground ${isRTL ? 'left-3' : 'right-3'}`}>
                 {showPassword ? (<EyeOff className="h-5 w-5" />) : (<Eye className="h-5 w-5" />)}
               </button>
             </div>
@@ -412,29 +416,29 @@ export default function Login() {
             {/* Confirm Password (only for signup) */}
             {!isLogin && (
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Lock className={`absolute top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground ${isRTL ? 'right-3' : 'left-3'}`} />
                 <Input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Confirm Password"
+                  placeholder={t("auth.confirmPassword")}
                   value={password2}
                   onChange={(e) => setPassword2(e.target.value)}
-                  className="pl-10"
+                  className={isRTL ? 'pr-10' : 'pl-10'}
                   required={!isLogin}
                 />
               </div>
             )}
 
             {isLogin && (
-              <div className="flex justify-end">
+              <div className={`flex ${isRTL ? 'justify-start' : 'justify-end'}`}>
                 <Link to="/forgot-password" className="text-sm text-accent hover:underline">
-                  Forgot password?
+                  {t("auth.forgotPassword")}
                 </Link>
               </div>
             )}
 
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? "Loading..." : (isLogin ? "Sign In" : "Create Account")}
-              {!loading && <ArrowRight className="h-4 w-4 ml-2" />}
+              {loading ? t("common.loading") : (isLogin ? t("common.signIn") : t("auth.createAccountBtn"))}
+              {!loading && <ArrowRight className={`h-4 w-4 ${isRTL ? 'me-2 rotate-180' : 'ms-2'}`} />}
             </Button>
 
             {/* Guest Bypass */}
@@ -444,7 +448,7 @@ export default function Login() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  Or
+                  {t("common.or")}
                 </span>
               </div>
             </div>
@@ -459,18 +463,18 @@ export default function Login() {
                 navigate("/dashboard");
               }}
             >
-              Continue as Guest
+              {t("common.continueAsGuest")}
             </Button>
 
             {!isLogin && (
               <p className="text-xs text-center text-muted-foreground">
-                By signing up, you agree to our{" "}
+                {t("auth.termsAgree")}{" "}
                 <Link to="/terms" className="text-accent hover:underline">
-                  Terms of Service
+                  {t("auth.termsOfService")}
                 </Link>{" "}
-                and{" "}
+                {t("auth.and")}{" "}
                 <Link to="/privacy" className="text-accent hover:underline">
-                  Privacy Policy
+                  {t("auth.privacyPolicy")}
                 </Link>
               </p>
             )}

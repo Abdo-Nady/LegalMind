@@ -6,11 +6,13 @@ import { GripVertical, Loader2, AlertCircle } from "lucide-react";
 import { WorkspaceLayout } from "@/components/layouts/WorkspaceLayout";
 import { PDFViewer } from "@/components/document/PDFViewer";
 import { ChatPanel } from "@/components/chat/ChatPanel";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { queryKeys } from "@/lib/queryClient";
 import { documentService } from "@/services/document.service";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
+import { exportToPDF } from "@/lib/pdf-export";
+import { toast } from "sonner";
 
 export default function DocumentWorkbench() {
   const { id } = useParams();
@@ -23,6 +25,22 @@ export default function DocumentWorkbench() {
     queryKey: queryKeys.documents.detail(id),
     queryFn: () => documentService.get(id),
     enabled: !!id,
+  });
+
+  // Fetch clauses for export (pre-fetch to check availability)
+  const { data: clausesData } = useQuery({
+    queryKey: queryKeys.documents.clauses(id),
+    queryFn: () => documentService.getClauses(id),
+    enabled: !!id && document?.status === 'ready',
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch summary for export (pre-fetch to check availability)
+  const { data: summaryData } = useQuery({
+    queryKey: queryKeys.documents.summary(id),
+    queryFn: () => documentService.getSummary(id),
+    enabled: !!id && document?.status === 'ready',
+    staleTime: 5 * 60 * 1000,
   });
 
   // Poll for processing status
@@ -51,6 +69,45 @@ export default function DocumentWorkbench() {
     setHighlightedPage(page);
     setTimeout(() => setHighlightedPage(undefined), 2000);
   };
+
+  // Export handlers
+  const handleExportInsights = useCallback(() => {
+    if (!clausesData?.analysis) {
+      toast.error('No insights available to export');
+      return;
+    }
+    try {
+      exportToPDF(
+        clausesData.analysis,
+        'Legal Clause Analysis',
+        'insights',
+        document?.title || 'Document'
+      );
+      toast.success('Insights exported successfully');
+    } catch (err) {
+      console.error('Export failed:', err);
+      toast.error('Failed to export insights');
+    }
+  }, [clausesData, document]);
+
+  const handleExportSummary = useCallback(() => {
+    if (!summaryData?.summary) {
+      toast.error('No summary available to export');
+      return;
+    }
+    try {
+      exportToPDF(
+        summaryData.summary,
+        'Executive Summary',
+        'summary',
+        document?.title || 'Document'
+      );
+      toast.success('Summary exported successfully');
+    } catch (err) {
+      console.error('Export failed:', err);
+      toast.error('Failed to export summary');
+    }
+  }, [summaryData, document]);
 
   // Loading state
   if (isLoading) {
@@ -118,7 +175,14 @@ export default function DocumentWorkbench() {
   }
 
   return (
-    <WorkspaceLayout documentTitle={document?.title || 'Document'} documentStatus={document?.status}>
+    <WorkspaceLayout
+      documentTitle={document?.title || 'Document'}
+      documentStatus={document?.status}
+      onExportInsights={handleExportInsights}
+      onExportSummary={handleExportSummary}
+      insightsAvailable={!!clausesData?.analysis}
+      summaryAvailable={!!summaryData?.summary}
+    >
       <PanelGroup direction="horizontal" className="h-full">
         {/* PDF Panel */}
         <Panel defaultSize={60} minSize={40}>

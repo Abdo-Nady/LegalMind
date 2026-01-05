@@ -21,6 +21,8 @@ export default {
       fontFamily: {
         serif: ['"DM Serif Display"', 'Georgia', 'serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        'arabic': ['"Cairo"', '"Noto Sans Arabic"', 'system-ui', 'sans-serif'],
+        'arabic-serif': ['"Amiri"', '"Noto Naskh Arabic"', 'Georgia', 'serif'],
       },
       colors: {
         border: 'hsl(var(--border))',

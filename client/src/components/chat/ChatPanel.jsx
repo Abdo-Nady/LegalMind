@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, MessageSquare, FileText, Lightbulb, Loader2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { MessageBubble } from "@/components/ui/message-bubble";
 import { ThinkingIndicator } from "@/components/ui/spinner";
@@ -211,11 +212,11 @@ export function ChatPanel({ documentId, onCitationClick, className }) {
                   <span className="ml-2 text-muted-foreground">Analyzing clauses...</span>
                 </div>
               ) : clausesData?.analysis ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <h3 className="font-serif text-lg text-foreground">Legal Clause Analysis</h3>
-                  <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <div className="rounded-lg border border-border bg-card p-4 whitespace-pre-wrap">
-                      {clausesData.analysis}
+                  <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                    <div className="prose-legal text-sm">
+                      <ReactMarkdown>{clausesData.analysis}</ReactMarkdown>
                     </div>
                   </div>
                 </div>
@@ -247,10 +248,12 @@ export function ChatPanel({ documentId, onCitationClick, className }) {
                   <span className="ml-2 text-muted-foreground">Generating summary...</span>
                 </div>
               ) : summaryData?.summary ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <h3 className="font-serif text-lg text-foreground">Executive Summary</h3>
-                  <div className="rounded-lg border border-border bg-card p-4 whitespace-pre-wrap">
-                    {summaryData.summary}
+                  <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                    <div className="prose-legal text-sm">
+                      <ReactMarkdown>{summaryData.summary}</ReactMarkdown>
+                    </div>
                   </div>
                 </div>
               ) : (

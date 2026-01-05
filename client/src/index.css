@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Cairo:wght@300;400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -313,4 +313,231 @@
 /* Selection */
 ::selection {
   @apply bg-accent/30 text-foreground;
+}
+
+/* Custom Prose Styles for Markdown */
+.prose-legal {
+  @apply text-foreground leading-relaxed;
+}
+
+.prose-legal h1,
+.prose-legal h2,
+.prose-legal h3,
+.prose-legal h4,
+.prose-legal h5,
+.prose-legal h6 {
+  @apply font-serif text-foreground mt-6 mb-3 first:mt-0;
+}
+
+.prose-legal h1 {
+  @apply text-xl font-semibold;
+}
+
+.prose-legal h2 {
+  @apply text-lg font-semibold;
+}
+
+.prose-legal h3 {
+  @apply text-base font-semibold;
+}
+
+.prose-legal p {
+  @apply mb-3 last:mb-0;
+}
+
+.prose-legal ul,
+.prose-legal ol {
+  @apply my-3 pl-5 space-y-1.5;
+}
+
+.prose-legal ul {
+  @apply list-disc;
+}
+
+.prose-legal ol {
+  @apply list-decimal;
+}
+
+.prose-legal li {
+  @apply text-foreground;
+}
+
+.prose-legal li > ul,
+.prose-legal li > ol {
+  @apply mt-1.5 mb-0;
+}
+
+.prose-legal strong {
+  @apply font-semibold text-foreground;
+}
+
+.prose-legal em {
+  @apply italic;
+}
+
+.prose-legal code {
+  @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+}
+
+.prose-legal pre {
+  @apply bg-muted p-3 rounded-lg overflow-x-auto my-3;
+}
+
+.prose-legal pre code {
+  @apply bg-transparent p-0;
+}
+
+.prose-legal blockquote {
+  @apply border-l-4 border-accent/50 pl-4 my-3 italic text-muted-foreground;
+}
+
+.prose-legal hr {
+  @apply my-6 border-border;
+}
+
+.prose-legal a {
+  @apply text-accent underline underline-offset-2 hover:text-accent/80;
+}
+
+.prose-legal table {
+  @apply w-full my-3 text-sm;
+}
+
+.prose-legal th {
+  @apply text-left font-semibold p-2 border-b border-border;
+}
+
+.prose-legal td {
+  @apply p-2 border-b border-border/50;
+}
+
+/* =============================================================================
+   RTL (Right-to-Left) Support for Arabic
+   ============================================================================= */
+
+/* Arabic font families for RTL mode */
+[dir="rtl"] {
+  font-family: 'Cairo', 'Inter', system-ui, sans-serif;
+}
+
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6,
+[dir="rtl"] .font-serif {
+  font-family: 'Amiri', 'DM Serif Display', Georgia, serif;
+}
+
+/* RTL text alignment */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+/* RTL margin and padding adjustments */
+[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+/* RTL flex direction */
+[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+[dir="rtl"] .space-x-3 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+[dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+[dir="rtl"] .space-x-6 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+[dir="rtl"] .space-x-8 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+/* RTL sidebar positioning */
+[dir="rtl"] .fixed.left-0 {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .fixed.right-0 {
+  right: auto;
+  left: 0;
+}
+
+/* RTL border adjustments */
+[dir="rtl"] .border-l-4 {
+  border-left-width: 0;
+  border-right-width: 4px;
+}
+
+[dir="rtl"] .border-r {
+  border-right-width: 0;
+  border-left-width: 1px;
+}
+
+/* RTL list adjustments */
+[dir="rtl"] .prose-legal ul,
+[dir="rtl"] .prose-legal ol {
+  padding-left: 0;
+  padding-right: 1.25rem;
+}
+
+/* RTL scrollbar positioning */
+[dir="rtl"]::-webkit-scrollbar {
+  left: 0;
+  right: auto;
+}
+
+/* RTL icon flip for directional icons */
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+/* RTL gap reversing */
+[dir="rtl"] .gap-2,
+[dir="rtl"] .gap-3,
+[dir="rtl"] .gap-4 {
+  direction: rtl;
+}
+
+/* Input field RTL adjustments */
+[dir="rtl"] input,
+[dir="rtl"] textarea {
+  text-align: right;
+}
+
+[dir="rtl"] input::placeholder,
+[dir="rtl"] textarea::placeholder {
+  text-align: right;
+}
+
+/* RTL-specific prose adjustments */
+[dir="rtl"] .prose-legal blockquote {
+  border-left: 0;
+  border-right: 4px solid;
+  padding-left: 0;
+  padding-right: 1rem;
+  @apply border-accent/50;
+}
+
+[dir="rtl"] .prose-legal th {
+  text-align: right;
 }
