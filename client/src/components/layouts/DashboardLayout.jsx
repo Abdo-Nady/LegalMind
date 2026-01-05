@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LayoutDashboard, Scale, Settings, LogOut, Menu, X, LogIn } from "lucide-react";
+import { LayoutDashboard, Scale, Settings, LogOut, Menu, X, LogIn, Home } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: Scale, label: "Egyptian Law", path: "/egyptian-law" },
-  { icon: Settings, label: "Settings", path: "/settings" },
+  { icon: Home, labelKey: "nav.home", path: "/" },
+  { icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/dashboard" },
+  { icon: Scale, labelKey: "nav.egyptianLaw", path: "/egyptian-law" },
+  { icon: Settings, labelKey: "nav.settings", path: "/settings" },
 ];
 
 export function DashboardLayout({ children }) {
@@ -17,6 +21,8 @@ export function DashboardLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, isGuest, user } = useAuth();
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
 
   const handleSignOut = async () => {
     await logout();
@@ -45,7 +51,10 @@ export function DashboardLayout({ children }) {
       <motion.aside
         initial={false}
         animate={{ width: sidebarOpen ? 260 : 72 }}
-        className="fixed left-0 top-0 h-full z-40 bg-sidebar border-r border-sidebar-border flex flex-col"
+        className={cn(
+          "fixed top-0 h-full z-40 bg-sidebar border-sidebar-border flex flex-col",
+          isRTL ? "right-0 border-l" : "left-0 border-r"
+        )}
       >
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
@@ -92,7 +101,7 @@ export function DashboardLayout({ children }) {
                     <item.icon className="h-5 w-5 flex-shrink-0" />
                     {sidebarOpen && (
                       <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-medium">
-                        {item.label}
+                        {t(item.labelKey)}
                       </motion.span>
                     )}
                   </Link>
@@ -101,6 +110,13 @@ export function DashboardLayout({ children }) {
             })}
           </ul>
         </nav>
+
+        {/* Language Switcher */}
+        {sidebarOpen && (
+          <div className="px-4 pb-2">
+            <LanguageSwitcher variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent/50" />
+          </div>
+        )}
 
         {/* User Section */}
         <div className="p-4 border-t border-sidebar-border">
@@ -120,7 +136,7 @@ export function DashboardLayout({ children }) {
                   </div>
                 )}
               </div>
-              <p className="text-xs text-sidebar-foreground/60 mb-1">Signed in as</p>
+              <p className="text-xs text-sidebar-foreground/60 mb-1">{t('sidebar.signedInAs')}</p>
               <p className="text-sm font-medium text-sidebar-foreground truncate">
                 {user.email || user.username}
               </p>
@@ -128,8 +144,8 @@ export function DashboardLayout({ children }) {
           )}
           {sidebarOpen && isGuest && (
             <div className="mb-3 px-3 py-2 rounded-lg bg-sidebar-accent/30">
-              <p className="text-xs text-sidebar-foreground/60 mb-1">Mode</p>
-              <p className="text-sm font-medium text-sidebar-foreground">Guest</p>
+              <p className="text-xs text-sidebar-foreground/60 mb-1">{t('sidebar.mode')}</p>
+              <p className="text-sm font-medium text-sidebar-foreground">{t('sidebar.guest')}</p>
             </div>
           )}
           <button
@@ -146,7 +162,7 @@ export function DashboardLayout({ children }) {
             )}
             {sidebarOpen && (
               <span className="text-sm font-medium">
-                {isGuest ? "Sign In" : "Sign Out"}
+                {isGuest ? t('common.signIn') : t('common.signOut')}
               </span>
             )}
           </button>
@@ -154,7 +170,12 @@ export function DashboardLayout({ children }) {
       </motion.aside>
 
       {/* Main Content */}
-      <main className={cn("flex-1 transition-all duration-300", sidebarOpen ? "ml-[260px]" : "ml-[72px]")}>
+      <main className={cn(
+        "flex-1 transition-all duration-300",
+        isRTL
+          ? (sidebarOpen ? "mr-[260px]" : "mr-[72px]")
+          : (sidebarOpen ? "ml-[260px]" : "ml-[72px]")
+      )}>
         {children}
       </main>
     </div>

@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Scale, FileText } from "lucide-react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { LawCard } from "@/components/egyptian-law/LawCard";
@@ -26,6 +27,8 @@ export default function EgyptianLaw() {
 }
 
 function Header() {
+  const { t } = useTranslation();
+  
   return (
     <div className="border-b border-border bg-card/50">
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -39,9 +42,9 @@ function Header() {
           </div>
           <div>
             <h1 className="font-serif text-3xl text-foreground">
-              Chat with Egyptian Law
+              {t("egyptianLaw.title")}
             </h1>
-            <p className="text-muted-foreground">تحدث مع القانون المصري</p>
+            <p className="text-muted-foreground">{t("egyptianLaw.titleAr")}</p>
           </div>
         </motion.div>
         <motion.p
@@ -50,9 +53,7 @@ function Header() {
           transition={{ delay: 0.1 }}
           className="text-muted-foreground max-w-2xl"
         >
-          Explore and ask questions about Egypt's major legal codes. Our AI
-          assistant will help you understand the laws, find relevant articles,
-          and explain legal concepts.
+          {t("egyptianLaw.subtitle")}
         </motion.p>
       </div>
     </div>
@@ -79,6 +80,8 @@ function DocumentGrid({ documents, onDocumentClick }) {
 }
 
 function InfoSection() {
+  const { t } = useTranslation();
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -92,14 +95,10 @@ function InfoSection() {
         </div>
         <div>
           <h3 className="font-serif text-lg text-foreground mb-2">
-            About These Documents
+            {t("egyptianLaw.aboutTitle")}
           </h3>
           <p className="text-sm text-muted-foreground">
-            These are the official Egyptian legal codes that have been
-            pre-loaded into our system. You can ask questions in English or
-            Arabic, and our AI will provide relevant information with citations
-            to specific articles and sections. Please note that this is for
-            informational purposes only and does not constitute legal advice.
+            {t("egyptianLaw.aboutDescription")}
           </p>
         </div>
       </div>

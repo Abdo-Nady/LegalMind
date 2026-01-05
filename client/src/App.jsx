@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { queryClient } from "@/lib/queryClient";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -21,12 +22,13 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+        <LanguageProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <Routes>
-            {/* <Route path="/" element={<Index />} /> */}
-            <Route path="/" element={<PublicRoute><Index /></PublicRoute>} />
+            {/* Home page accessible to everyone */}
+            <Route path="/" element={<Index />} />
 
             {/* <Route path="/login" element={<Login />} /> */}
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
@@ -41,7 +43,8 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
+          </BrowserRouter>
+        </LanguageProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

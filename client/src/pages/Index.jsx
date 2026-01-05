@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import {
   FileSearch,
   MessageSquare,
@@ -15,109 +16,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
-const TYPING_PROMPTS = [
-  "What are the high-risk clauses in this contract?",
-  "Summarize the key obligations and liabilities...",
-  "Are there any unusual termination clauses?",
-  "What negotiation points should I focus on?",
-  "Identify all payment terms and deadlines...",
-  "What are the indemnification provisions?",
-];
-
-const TRUST_INDICATORS = [
-  { icon: Lock, text: "Enterprise-grade security" },
-  { icon: Zap, text: "Instant analysis" },
-  { icon: CheckCircle, text: "Certified" },
-];
-
-const HOW_IT_WORKS_STEPS = [
-  {
-    step: "01",
-    icon: Upload,
-    title: "Upload Your Document",
-    description:
-      "Drag and drop your contract, NDA, or any legal document. We support PDF files up to 50MB.",
-  },
-  {
-    step: "02",
-    icon: Brain,
-    title: "AI Analyzes Content",
-    description:
-      "Our AI reads and understands the legal language, identifying key clauses, risks, and obligations.",
-  },
-  {
-    step: "03",
-    icon: MessageSquare,
-    title: "Ask Questions & Get Answers",
-    description:
-      "Chat with your document. Ask anything and get instant answers with page citations.",
-  },
-];
-
-const FEATURES = [
-  {
-    icon: FileSearch,
-    title: "Instant Risk Detection",
-    description:
-      "AI automatically identifies high-risk clauses, unusual terms, and potential issues the moment you upload a document.",
-  },
-  {
-    icon: MessageSquare,
-    title: "Intelligent Document Chat",
-    description:
-      "Ask questions about your contracts in plain English. Get answers with precise citations and page references.",
-  },
-  {
-    icon: Brain,
-    title: "Smart Clause Analysis",
-    description:
-      "Compare clauses against industry standards. Get recommendations for stronger language and better protections.",
-  },
-  {
-    icon: FileText,
-    title: "Automated Summaries",
-    description:
-      "Generate executive summaries highlighting key terms, obligations, and important dates automatically.",
-  },
-  {
-    icon: Lock,
-    title: "Enterprise Security",
-    description:
-      "SOC 2 Type II certified. Bank-grade encryption. Your documents never leave your control.",
-  },
-  {
-    icon: Zap,
-    title: "Lightning Fast",
-    description:
-      "Analyze a 50-page contract in under 30 seconds. Process hundreds of documents in parallel.",
-  },
-];
-
-const SECURITY_CHECKLIST = [
-  "SOC 2 Type II certified infrastructure",
-  "256-bit AES encryption at rest and in transit",
-  "Documents automatically deleted after 30 days",
-  "No data used for AI training",
-  "GDPR and CCPA compliant",
-];
-
-const SECURITY_STATS = [
-  { value: "256-bit", label: "Encryption" },
-  { value: "99.9%", label: "Uptime SLA" },
-  { value: "SOC 2", label: "Certified" },
-  { value: "GDPR", label: "Compliant" },
-];
-
-const CTA_BENEFITS = [
-  "No credit card required",
-  "14-day free trial",
-  "Cancel anytime",
-];
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // =============================================================================
 // HOOKS
@@ -128,7 +28,7 @@ function useTypingAnimation(prompts, { isActive = true } = {}) {
   const [promptIndex, setPromptIndex] = useState(0);
 
   useEffect(() => {
-    if (!isActive) {
+    if (!isActive || !prompts.length) {
       setTypingText("");
       return;
     }
@@ -173,6 +73,52 @@ function useTypingAnimation(prompts, { isActive = true } = {}) {
 // SUB-COMPONENTS
 // =============================================================================
 
+const EAGLE_COLOR = "#C09300";
+
+function EgyptianFlag({ className = "w-8 h-5" }) {
+  return (
+    <svg
+      viewBox="0 0 36 24"
+      className={`${className} rounded-sm`}
+      style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.2))" }}
+      aria-label="Egyptian Flag"
+    >
+      <defs>
+        <clipPath id="egyptFlagClip">
+          <rect x="0" y="0" width="36" height="24" rx="2" ry="2" />
+        </clipPath>
+      </defs>
+      <g clipPath="url(#egyptFlagClip)">
+        {/* Flag stripes */}
+        <rect y="0" width="36" height="8" fill="#CE1126" />
+        <rect y="8" width="36" height="8" fill="#FFFFFF" />
+        <rect y="16" width="36" height="8" fill="#000000" />
+        {/* Eagle of Saladin */}
+        <g transform="translate(18, 12)" fill={EAGLE_COLOR}>
+          <ellipse cx="0" cy="0.5" rx="2.2" ry="2" />
+          <circle cx="0" cy="-2" r="1.2" />
+          <path d="M0,-1.8 L0.4,-1.2 L0,-1.5 L-0.4,-1.2 Z" />
+          <path d="M-2,-0.5 Q-4.5,-1 -5,1 Q-4,0.5 -2.2,1 Z" />
+          <path d="M2,-0.5 Q4.5,-1 5,1 Q4,0.5 2.2,1 Z" />
+          <path d="M-1.5,2 L-2,4 L-0.8,3 L0,4.2 L0.8,3 L2,4 L1.5,2 Z" />
+          <ellipse cx="0" cy="0.5" rx="1" ry="0.9" fill="#000" fillOpacity="0.3" />
+        </g>
+      </g>
+      <rect
+        x="0"
+        y="0"
+        width="36"
+        height="24"
+        rx="2"
+        ry="2"
+        fill="none"
+        stroke="rgba(0,0,0,0.15)"
+        strokeWidth="0.5"
+      />
+    </svg>
+  );
+}
+
 function Logo({ size = "default" }) {
   const sizeClasses = {
     default: { img: "h-9", text: "text-xl" },
@@ -197,17 +143,21 @@ function Logo({ size = "default" }) {
 }
 
 function Navigation() {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
+
   const navLinks = [
-    { href: "#features", label: "Features" },
-    { href: "#how-it-works", label: "How It Works" },
-    { href: "#security", label: "Security" },
+    { href: "#features", label: t("nav.features") },
+    { href: "#how-it-works", label: t("nav.howItWorks") },
+    { href: "#security", label: t("nav.security") },
   ];
 
   return (
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border"
+      className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border"
+      dir={isRTL ? "rtl" : "ltr"}
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <Logo />
@@ -217,7 +167,7 @@ function Navigation() {
             <a
               key={href}
               href={href}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
             >
               {label}
             </a>
@@ -225,13 +175,14 @@ function Navigation() {
         </div>
 
         <div className="flex items-center gap-3">
+          <LanguageSwitcher variant="ghost" />
           <Link to="/login">
-            <Button variant="ghost">Sign In</Button>
+            <Button variant="ghost">{t("common.signIn")}</Button>
           </Link>
           <Link to="/login">
             <Button variant="premium">
-              Get Started
-              <ArrowRight className="h-4 w-4 ml-1" />
+              {t("nav.getStarted")}
+              <ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180 mr-1" : "ml-1"}`} />
             </Button>
           </Link>
         </div>
@@ -241,10 +192,28 @@ function Navigation() {
 }
 
 function PromptBox({ onSubmit, onUploadClick }) {
+  const { t, i18n } = useTranslation();
+  const { isRTL } = useLanguage();
   const [inputValue, setInputValue] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
 
-  const typingText = useTypingAnimation(TYPING_PROMPTS, {
+  // Memoize prompts to prevent useTypingAnimation from resetting
+  const typingPrompts = useMemo(() => [
+    t("landing.typingPrompts.riskClauses"),
+    t("landing.typingPrompts.obligations"),
+    t("landing.typingPrompts.termination"),
+    t("landing.typingPrompts.negotiation"),
+    t("landing.typingPrompts.payment"),
+    t("landing.typingPrompts.indemnification"),
+  ], [i18n.language]);
+
+  const trustIndicators = [
+    { icon: Lock, text: t("landing.trustIndicators.security") },
+    { icon: Zap, text: t("landing.trustIndicators.instant") },
+    { icon: CheckCircle, text: t("landing.trustIndicators.certified") },
+  ];
+
+  const typingText = useTypingAnimation(typingPrompts, {
     isActive: !inputValue && !isInputFocused,
   });
 
@@ -299,7 +268,7 @@ function PromptBox({ onSubmit, onUploadClick }) {
                 {!inputValue && isInputFocused && (
                   <div className="absolute inset-0 pointer-events-none flex items-start">
                     <span className="text-lg text-muted-foreground/30">
-                      Ask a question about your contract...
+                      {t("landing.placeholder")}
                     </span>
                   </div>
                 )}
@@ -314,8 +283,8 @@ function PromptBox({ onSubmit, onUploadClick }) {
                 className="text-muted-foreground hover:text-foreground"
                 onClick={onUploadClick}
               >
-                <Upload className="h-4 w-4 mr-2" />
-                Upload PDF
+                <Upload className="h-4 w-4 me-2" />
+                {t("landing.uploadPdf")}
               </Button>
               <Button
                 type="submit"
@@ -324,7 +293,7 @@ function PromptBox({ onSubmit, onUploadClick }) {
                 disabled={!inputValue.trim()}
                 className="gap-2"
               >
-                Get Started
+                {t("nav.getStarted")}
                 <Send className="h-4 w-4" />
               </Button>
             </div>
@@ -338,7 +307,7 @@ function PromptBox({ onSubmit, onUploadClick }) {
         transition={{ delay: 0.8 }}
         className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-muted-foreground"
       >
-        {TRUST_INDICATORS.map(({ icon: Icon, text }, idx) => (
+        {trustIndicators.map(({ icon: Icon, text }, idx) => (
           <div key={idx} className="flex items-center gap-2">
             <Icon className="h-4 w-4 text-accent" />
             <span>{text}</span>
@@ -350,6 +319,7 @@ function PromptBox({ onSubmit, onUploadClick }) {
 }
 
 function HeroSection() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -367,8 +337,9 @@ function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Badge variant="premium" className="mb-6">
-            AI-Powered Legal Document Analysis
+          <Badge variant="premium" className="mb-6 gap-2.5 px-4 py-2">
+            {t("landing.badge")}
+            <EgyptianFlag />
           </Badge>
         </motion.div>
 
@@ -378,9 +349,9 @@ function HeroSection() {
           transition={{ delay: 0.2 }}
           className="font-serif text-4xl md:text-6xl lg:text-7xl text-foreground mb-6 leading-tight"
         >
-          Ask anything about
+          {t("landing.heroTitle1")}
           <br />
-          <span className="text-gradient-gold">your legal documents</span>
+          <span className="text-gradient-gold">{t("landing.heroTitle2")}</span>
         </motion.h1>
 
         <motion.p
@@ -389,8 +360,7 @@ function HeroSection() {
           transition={{ delay: 0.3 }}
           className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
         >
-          Upload contracts, analyze risks, and get instant answers. Powered by
-          AI that understands legal language.
+          {t("landing.heroSubtitle")}
         </motion.p>
 
         <PromptBox
@@ -405,6 +375,30 @@ function HeroSection() {
 }
 
 function HowItWorksSection() {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
+
+  const steps = [
+    {
+      step: t("landing.howItWorks.step1.number"),
+      icon: Upload,
+      title: t("landing.howItWorks.step1.title"),
+      description: t("landing.howItWorks.step1.description"),
+    },
+    {
+      step: t("landing.howItWorks.step2.number"),
+      icon: Brain,
+      title: t("landing.howItWorks.step2.title"),
+      description: t("landing.howItWorks.step2.description"),
+    },
+    {
+      step: t("landing.howItWorks.step3.number"),
+      icon: MessageSquare,
+      title: t("landing.howItWorks.step3.title"),
+      description: t("landing.howItWorks.step3.description"),
+    },
+  ];
+
   return (
     <section id="how-it-works" className="py-20 px-6 bg-muted/30">
       <div className="max-w-7xl mx-auto">
@@ -415,18 +409,18 @@ function HowItWorksSection() {
           className="text-center mb-16"
         >
           <Badge variant="outline" className="mb-4">
-            How It Works
+            {t("landing.howItWorks.badge")}
           </Badge>
           <h2 className="font-serif text-4xl text-foreground mb-4">
-            Three steps to smarter contracts
+            {t("landing.howItWorks.title")}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            From upload to insights in under a minute
+            {t("landing.howItWorks.subtitle")}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {HOW_IT_WORKS_STEPS.map((item, idx) => (
+          {steps.map((item, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 30 }}
@@ -450,8 +444,8 @@ function HowItWorksSection() {
                 <p className="text-muted-foreground">{item.description}</p>
               </div>
               {idx < 2 && (
-                <div className="hidden md:flex absolute top-1/2 -right-4 transform -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background border border-border items-center justify-center">
-                  <ArrowRight className="h-4 w-4 text-secondary" />
+                <div className={`hidden md:flex absolute top-1/2 ${isRTL ? "-left-4" : "-right-4"} transform -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background border border-border items-center justify-center`}>
+                  <ArrowRight className={`h-4 w-4 text-secondary ${isRTL ? "rotate-180" : ""}`} />
                 </div>
               )}
             </motion.div>
@@ -463,6 +457,41 @@ function HowItWorksSection() {
 }
 
 function FeaturesSection() {
+  const { t } = useTranslation();
+
+  const features = [
+    {
+      icon: FileSearch,
+      title: t("landing.features.riskDetection.title"),
+      description: t("landing.features.riskDetection.description"),
+    },
+    {
+      icon: MessageSquare,
+      title: t("landing.features.documentChat.title"),
+      description: t("landing.features.documentChat.description"),
+    },
+    {
+      icon: Brain,
+      title: t("landing.features.clauseAnalysis.title"),
+      description: t("landing.features.clauseAnalysis.description"),
+    },
+    {
+      icon: FileText,
+      title: t("landing.features.automatedSummaries.title"),
+      description: t("landing.features.automatedSummaries.description"),
+    },
+    {
+      icon: Lock,
+      title: t("landing.features.enterpriseSecurity.title"),
+      description: t("landing.features.enterpriseSecurity.description"),
+    },
+    {
+      icon: Zap,
+      title: t("landing.features.lightningFast.title"),
+      description: t("landing.features.lightningFast.description"),
+    },
+  ];
+
   return (
     <section id="features" className="py-20 px-6">
       <div className="max-w-7xl mx-auto">
@@ -473,18 +502,18 @@ function FeaturesSection() {
           className="text-center mb-16"
         >
           <Badge variant="outline" className="mb-4">
-            Features
+            {t("landing.features.badge")}
           </Badge>
           <h2 className="font-serif text-4xl text-foreground mb-4">
-            Everything You Need for Document Analysis
+            {t("landing.features.title")}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Powerful tools designed specifically for legal professionals
+            {t("landing.features.subtitle")}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {FEATURES.map((feature, idx) => (
+          {features.map((feature, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 30 }}
@@ -509,6 +538,23 @@ function FeaturesSection() {
 }
 
 function SecuritySection() {
+  const { t } = useTranslation();
+
+  const securityChecklist = [
+    t("landing.security.checklist.soc2"),
+    t("landing.security.checklist.encryption"),
+    t("landing.security.checklist.deletion"),
+    t("landing.security.checklist.noTraining"),
+    t("landing.security.checklist.compliance"),
+  ];
+
+  const securityStats = [
+    { value: "256-bit", label: t("landing.security.stats.encryption") },
+    { value: "99.9%", label: t("landing.security.stats.uptime") },
+    { value: "SOC 2", label: t("landing.security.stats.certified") },
+    { value: "GDPR", label: t("landing.security.stats.compliant") },
+  ];
+
   return (
     <section id="security" className="py-20 px-6 bg-muted/30">
       <div className="max-w-7xl mx-auto">
@@ -519,17 +565,16 @@ function SecuritySection() {
             viewport={{ once: true }}
           >
             <Badge variant="outline" className="mb-4">
-              Security
+              {t("landing.security.badge")}
             </Badge>
             <h2 className="font-serif text-4xl text-foreground mb-6">
-              Your documents are safe with us
+              {t("landing.security.title")}
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              We understand the sensitivity of legal documents. That's why we've
-              built enterprise-grade security into every layer of our platform.
+              {t("landing.security.subtitle")}
             </p>
             <div className="space-y-4">
-              {SECURITY_CHECKLIST.map((item, idx) => (
+              {securityChecklist.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-3">
                   <CheckCircle className="h-5 w-5 text-accent flex-shrink-0" />
                   <span className="text-foreground">{item}</span>
@@ -551,15 +596,15 @@ function SecuritySection() {
                 </div>
                 <div>
                   <h3 className="font-serif text-xl text-foreground">
-                    Bank-Grade Security
+                    {t("landing.security.bankGrade")}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Trusted by 500+ law firms
+                    {t("landing.security.trustedBy")}
                   </p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                {SECURITY_STATS.map((stat, idx) => (
+                {securityStats.map((stat, idx) => (
                   <div
                     key={idx}
                     className="bg-muted/50 rounded-xl p-4 text-center"
@@ -582,6 +627,15 @@ function SecuritySection() {
 }
 
 function CTASection() {
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
+
+  const ctaBenefits = [
+    t("landing.cta.benefits.noCard"),
+    t("landing.cta.benefits.trial"),
+    t("landing.cta.benefits.cancel"),
+  ];
+
   return (
     <section className="py-20 px-6">
       <motion.div
@@ -597,19 +651,18 @@ function CTASection() {
 
           <div className="relative z-10">
             <h2 className="font-serif text-3xl md:text-5xl text-primary-foreground mb-6">
-              Ready to Transform Your
+              {t("landing.cta.title1")}
               <br />
-              <span className="text-gradient-gold">Document Review?</span>
+              <span className="text-gradient-gold">{t("landing.cta.title2")}</span>
             </h2>
             <p className="text-lg text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-              Join hundreds of leading law firms and legal teams already using
-              LegalMind.ai to save time and reduce risk.
+              {t("landing.cta.subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/dashboard">
                 <Button size="lg" variant="premium">
-                  Start Free Trial
-                  <ArrowRight className="h-4 w-4 ml-2" />
+                  {t("landing.cta.startTrial")}
+                  <ArrowRight className={`h-4 w-4 ${isRTL ? "me-2 rotate-180" : "ms-2"}`} />
                 </Button>
               </Link>
               <Link to="/login">
@@ -618,13 +671,13 @@ function CTASection() {
                   variant="ghost"
                   className="text-primary-foreground hover:bg-primary-foreground/10"
                 >
-                  Schedule Demo
+                  {t("landing.cta.scheduleDemo")}
                 </Button>
               </Link>
             </div>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-primary-foreground/70">
-              {CTA_BENEFITS.map((item, idx) => (
+              {ctaBenefits.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-secondary" />
                   <span>{item}</span>
@@ -639,11 +692,13 @@ function CTASection() {
 }
 
 function Footer() {
+  const { t } = useTranslation();
+
   const footerLinks = [
-    { href: "#", label: "Privacy" },
-    { href: "#", label: "Terms" },
-    { href: "#", label: "Security" },
-    { href: "#", label: "Contact" },
+    { href: "#", label: t("landing.footer.privacy") },
+    { href: "#", label: t("landing.footer.terms") },
+    { href: "#", label: t("landing.footer.security") },
+    { href: "#", label: t("landing.footer.contact") },
   ];
 
   return (
@@ -665,7 +720,7 @@ function Footer() {
           </div>
 
           <p className="text-sm text-muted-foreground">
-            © 2024 LegalMind.ai. All rights reserved.
+            © {t("landing.footer.copyright")}
           </p>
         </div>
       </div>
