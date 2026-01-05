@@ -245,6 +245,154 @@ export default function Settings() {
     ? settingsSections.filter(section => section.id !== "security")
     : settingsSections;
 
+  // Theme management state
+  /* 
+     ARCHITECTURE NOTE:
+     We are using a Local Theme Manager pattern here (Direct DOM manipulation + LocalStorage)
+     instead of a Global ThemeContext.
+     
+     Reasoning:
+     1. No existing ThemeContext/Provider exists in the codebase (only AuthContext).
+     2. Creating a new Global Context requires wrapping the root in App.jsx.
+     3. Constraints explicitly forbid modifying App.jsx or adding new global providers.
+     
+     This solution isolates theme logic to Settings.jsx while maintaining persistence
+     and DOM application as requested.
+  */
+  const [themeMode, setThemeMode] = useState(() => {
+    // state: load theme preference from localStorage or default
+    const saved = localStorage.getItem("mode_type");
+    return saved || "light";
+  });
+
+  const [customColors, setCustomColors] = useState(() => {
+    // state: load custom colors from localStorage if available
+    const saved = localStorage.getItem("colors");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved colors", e);
+      }
+    }
+    // Default custom placeholders (only used when custom mode is applied)
+    return ["#ffffff", "#000000", "#c39d64"];
+  });
+
+  const [modeName, setModeName] = useState(() => {
+    // state: load mode name
+    return localStorage.getItem("mode_name") || "";
+  });
+
+  // Helper: Hex to HSL conversion for Tailwind compatibility
+  // This is required because index.css uses space-separated HSL values (e.g., 213 70% 15%)
+  const hexToHSL = (hex) => {
+    let r = 0, g = 0, b = 0;
+    if (hex.length === 4) {
+      r = "0x" + hex[1] + hex[1];
+      g = "0x" + hex[2] + hex[2];
+      b = "0x" + hex[3] + hex[3];
+    } else if (hex.length === 7) {
+      r = "0x" + hex[1] + hex[2];
+      g = "0x" + hex[3] + hex[4];
+      b = "0x" + hex[5] + hex[6];
+    }
+    r = +r;
+    g = +g;
+    b = +b;
+
+    r /= 255;
+    g /= 255;
+    b /= 255;
+
+    let cmin = Math.min(r, g, b),
+      cmax = Math.max(r, g, b),
+      delta = cmax - cmin,
+      h = 0,
+      s = 0,
+      l = 0;
+
+    if (delta === 0) h = 0;
+    else if (cmax === r) h = ((g - b) / delta) % 6;
+    else if (cmax === g) h = (b - r) / delta + 2;
+    else h = (r - g) / delta + 4;
+
+    h = Math.round(h * 60);
+    if (h < 0) h += 360;
+
+    l = (cmax + cmin) / 2;
+    s = delta === 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+    s = +(s * 100).toFixed(1);
+    l = +(l * 100).toFixed(1);
+
+    return `${h} ${s}% ${l}%`;
+  };
+
+  // Effect: Apply theme settings to DOM
+  // context usage: Side-effect to apply theme classes and CSS variables
+  useEffect(() => {
+    const root = document.documentElement;
+
+    // Reset existing
+    root.classList.remove("light", "dark");
+    root.style.removeProperty("--primary");
+    root.style.removeProperty("--secondary");
+    // Using --background for the main background as per index.css
+    root.style.removeProperty("--background");
+
+    if (themeMode === "dark") {
+      root.classList.add("dark");
+    } else if (themeMode === "light") {
+      root.classList.add("light");
+    } else if (themeMode === "custom") {
+      // Apply custom colors to CSS variables
+      // Mapping: Color 1 -> Background, Color 2 -> Primary, Color 3 -> Secondary
+      // This mapping ensures the 3 user-selected colors cover the main palette slots
+      if (customColors && customColors.length === 3) {
+        root.style.setProperty("--background", hexToHSL(customColors[0]));
+        root.style.setProperty("--primary", hexToHSL(customColors[1]));
+        root.style.setProperty("--secondary", hexToHSL(customColors[2]));
+      }
+    }
+
+    // Persist choice (Consistency requirement)
+    localStorage.setItem("mode_type", themeMode);
+    if (themeMode === "custom") {
+      localStorage.setItem("colors", JSON.stringify(customColors));
+      localStorage.setItem("mode_name", modeName);
+    }
+  }, [themeMode, customColors, modeName]);
+
+  // handlers: Theme Selection
+  const handleThemeChange = (mode) => {
+    setThemeMode(mode);
+  };
+
+  // handlers: Custom Color Input
+  const handleColorChange = (index, value) => {
+    const newColors = [...customColors];
+    newColors[index] = value;
+    setCustomColors(newColors);
+  };
+
+  // handlers: Apply Custom Mode (validation happens here implicitly by setting mode)
+  const applyCustomMode = () => {
+    if (customColors.length !== 3) return; // Basic validation
+    // The name "mode1" is default if empty
+    if (!modeName.trim()) setModeName("mode1");
+    setThemeMode("custom");
+  };
+
+  // export logic: Export settings to alert
+  const handleExport = () => {
+    const exportData = {
+      mode_name: modeName || "mode1",
+      mode_type: themeMode,
+      colors: themeMode === "custom" ? customColors : null
+    };
+    alert(JSON.stringify(exportData, null, 2));
+  };
+
   return (
     <DashboardLayout>
       <div className="p-8">
@@ -495,7 +643,90 @@ export default function Settings() {
               </Card>
             )}
 
-            {activeSection !== "profile" && activeSection !== "security" && (
+            {/* Appearance Settings Section */}
+            {activeSection === "appearance" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Appearance</CardTitle>
+                  <CardDescription>
+                    Customize the look and feel of the application
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Mode Selection */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Button
+                      variant={themeMode === "light" ? "default" : "outline"}
+                      onClick={() => handleThemeChange("light")}
+                      className="w-full justify-start"
+                    >
+                      <span className="mr-2">☀️</span> Light Mode
+                    </Button>
+                    <Button
+                      variant={themeMode === "dark" ? "default" : "outline"}
+                      onClick={() => handleThemeChange("dark")}
+                      className="w-full justify-start"
+                    >
+                      <span className="mr-2">🌙</span> Dark Mode
+                    </Button>
+                    <Button
+                      variant={(themeMode === "custom" || themeMode === "custom-editing") ? "default" : "outline"}
+                      onClick={() => setThemeMode("custom-editing")}
+                      className="w-full justify-start"
+                    >
+                      <span className="mr-2">🎨</span> Custom Mode
+                    </Button>
+                  </div>
+
+                  {/* Custom Mode Controls - Shown when editing custom mode or custom is active */}
+                  {(themeMode === "custom" || themeMode === "custom-editing") && (
+                    <div className="p-4 border border-border rounded-lg space-y-4 bg-muted/30">
+                      <h3 className="text-sm font-medium mb-2">Custom Palette</h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs text-muted-foreground block mb-1">Mode Name</label>
+                          <Input
+                            value={modeName}
+                            onChange={(e) => setModeName(e.target.value)}
+                            placeholder="e.g. My Cool Theme"
+                          />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          {customColors.map((color, index) => (
+                            <div key={index}>
+                              <label className="text-xs text-muted-foreground block mb-1">Color {index + 1}</label>
+                              <input
+                                type="color"
+                                value={color}
+                                onChange={(e) => handleColorChange(index, e.target.value)}
+                                className="w-full h-9 rounded-md border border-input cursor-pointer"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <Button onClick={applyCustomMode}>
+                          Apply Custom Mode
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Export Section */}
+                  <div className="pt-4 border-t border-border">
+                    <Button variant="secondary" onClick={handleExport} className="w-full sm:w-auto">
+                      Export Settings JSON
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Generic Placeholder for other sections */}
+            {activeSection !== "profile" && activeSection !== "security" && activeSection !== "appearance" && (
               <Card>
                 <CardHeader>
                   <CardTitle>
