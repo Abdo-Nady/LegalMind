@@ -11,6 +11,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import DocumentWorkbench from "./pages/DocumentWorkbench";
+import EgyptianLaw from "./pages/EgyptianLaw";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -33,6 +34,8 @@ const App = () => (
             <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
 
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/egyptian-law" element={<ProtectedRoute><EgyptianLaw /></ProtectedRoute>} />
+            <Route path="/egyptian-law/:lawId" element={<ProtectedRoute><DocumentWorkbench /></ProtectedRoute>} />
             <Route path="/documents" element={<Navigate to="/dashboard" replace />} />
             <Route path="/document/:id" element={<ProtectedRoute><DocumentWorkbench /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

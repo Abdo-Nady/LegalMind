@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LayoutDashboard, FileText, Settings, LogOut, Menu, X, Sparkles, LogIn } from "lucide-react";
+import { LayoutDashboard, Scale, Settings, LogOut, Menu, X, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: FileText, label: "Documents", path: "/documents" },
+  { icon: Scale, label: "Egyptian Law", path: "/egyptian-law" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
@@ -51,11 +51,15 @@ export function DashboardLayout({ children }) {
         <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
           {sidebarOpen && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-primary" />
-              </div>
-              <span className="font-serif text-lg text-sidebar-foreground">
-                LegalMind.ai
+              <img
+                src="/images/legal-mind-logo.png"
+                alt="LegalMind.ai"
+                className="h-8 w-auto"
+              />
+              <span className="font-serif text-lg">
+                <span className="text-sidebar-foreground">Legal</span>
+                <span className="text-secondary">Mind</span>
+                <span className="text-sidebar-foreground">.ai</span>
               </span>
             </motion.div>
           )}
