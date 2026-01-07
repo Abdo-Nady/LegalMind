@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 // =============================================================================
 // HOOKS
@@ -145,6 +146,7 @@ function Logo({ size = "default" }) {
 function Navigation() {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const { user, isGuest, isAuthenticated } = useAuth();
 
   const navLinks = [
     { href: "#features", label: t("nav.features") },
@@ -176,12 +178,16 @@ function Navigation() {
 
         <div className="flex items-center gap-3">
           <LanguageSwitcher variant="ghost" />
-          <Link to="/login">
-            <Button variant="ghost">{t("common.signIn")}</Button>
-          </Link>
-          <Link to="/login">
+          {isAuthenticated && !isGuest ? (
+            <span className="text-sm text-muted-foreground">{user?.username}</span>
+          ) : (
+            <Link to="/login">
+              <Button variant="ghost">{t("common.signIn")}</Button>
+            </Link>
+          )}
+          <Link to={isAuthenticated && !isGuest ? "/dashboard" : "/login"}>
             <Button variant="premium">
-              {t("nav.getStarted")}
+              {isAuthenticated && !isGuest ? t("nav.dashboard") : t("nav.getStarted")}
               <ArrowRight className={`h-4 w-4 ${isRTL ? "rotate-180 mr-1" : "ml-1"}`} />
             </Button>
           </Link>
