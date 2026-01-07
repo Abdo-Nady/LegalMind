@@ -26,7 +26,7 @@ export function LawCard({ document, index, onClick }) {
           <div className="absolute top-3 right-3">
             <Badge
               variant="secondary"
-              className="bg-white/90 text-primary border-0 backdrop-blur-sm"
+              className="bg-card/95 text-foreground border border-border/50 backdrop-blur-sm"
             >
               {document.titleAr}
             </Badge>
