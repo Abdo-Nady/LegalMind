@@ -10,17 +10,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useUploadAvatar, useDeleteAvatar, useUpdateUsername, useChangePassword } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 const settingsSections = [
-  { id: "profile", label: "Profile", icon: User },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "security", label: "Security", icon: Shield },
-  { id: "billing", label: "Billing", icon: CreditCard },
-  { id: "appearance", label: "Appearance", icon: Palette },
-  { id: "help", label: "Help & Support", icon: HelpCircle },
+  { id: "profile", labelKey: "settings.sections.profile", icon: User },
+  { id: "notifications", labelKey: "settings.sections.notifications", icon: Bell },
+  { id: "security", labelKey: "settings.sections.security", icon: Shield },
+  { id: "billing", labelKey: "settings.sections.billing", icon: CreditCard },
+  { id: "appearance", labelKey: "settings.sections.appearance", icon: Palette },
+  { id: "help", labelKey: "settings.sections.help", icon: HelpCircle },
 ];
 
 export default function Settings() {
+  const { t } = useTranslation();
   const [activeSection, setActiveSection] = useState("profile");
   const { user, isGuest, loading, refreshUser } = useAuth();
   const [isGoogleUser, setIsGoogleUser] = useState(false);
@@ -66,8 +68,8 @@ export default function Settings() {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       toast({
-        title: "Error",
-        description: "Please upload a valid image file (JPG, PNG, GIF, or WEBP)",
+        title: t("common.error"),
+        description: t("validation.invalidImage"),
         variant: "destructive",
       });
       return;
@@ -75,8 +77,8 @@ export default function Settings() {
 
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "Error",
-        description: "File size must be less than 5MB",
+        title: t("common.error"),
+        description: t("validation.fileTooLarge"),
         variant: "destructive",
       });
       return;
@@ -85,13 +87,13 @@ export default function Settings() {
     try {
       await uploadAvatarMutation.mutateAsync(file);
       toast({
-        title: "Success",
-        description: "Avatar updated successfully!",
+        title: t("common.success"),
+        description: t("toast.avatarUpdated"),
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: error.response?.data?.detail || error.message || "Failed to upload avatar",
+        title: t("common.error"),
+        description: error.response?.data?.detail || error.message || t("toast.failedToUpload"),
         variant: "destructive",
       });
     } finally {
@@ -102,20 +104,20 @@ export default function Settings() {
   };
 
   const handleDeleteAvatar = async () => {
-    if (!confirm("Are you sure you want to delete your avatar?")) {
+    if (!confirm(t("validation.deleteAvatarConfirm"))) {
       return;
     }
 
     try {
       await deleteAvatarMutation.mutateAsync();
       toast({
-        title: "Success",
-        description: "Avatar deleted successfully!",
+        title: t("common.success"),
+        description: t("toast.avatarDeleted"),
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: error.response?.data?.detail || error.message || "Failed to delete avatar",
+        title: t("common.error"),
+        description: error.response?.data?.detail || error.message || t("toast.failedToDelete"),
         variant: "destructive",
       });
     }
@@ -126,8 +128,8 @@ export default function Settings() {
 
     if (!username.trim()) {
       toast({
-        title: "Error",
-        description: "Username cannot be empty",
+        title: t("common.error"),
+        description: t("validation.usernameRequired"),
         variant: "destructive",
       });
       return;
@@ -138,8 +140,8 @@ export default function Settings() {
 
     if (!hasUsernameChanged && !hasPasswordChange) {
       toast({
-        title: "Info",
-        description: "No changes to save",
+        title: t("common.info"),
+        description: t("validation.noChanges"),
       });
       return;
     }
@@ -154,8 +156,8 @@ export default function Settings() {
       if (hasPasswordChange) {
         if (newPassword1 !== newPassword2) {
           toast({
-            title: "Error",
-            description: "New passwords don't match",
+            title: t("common.error"),
+            description: t("validation.passwordsDontMatch"),
             variant: "destructive",
           });
           return;
@@ -163,8 +165,8 @@ export default function Settings() {
 
         if (newPassword1.length < 8) {
           toast({
-            title: "Error",
-            description: "Password must be at least 8 characters long",
+            title: t("common.error"),
+            description: t("validation.passwordMinLength"),
             variant: "destructive",
           });
           return;
@@ -181,13 +183,13 @@ export default function Settings() {
       }
 
       toast({
-        title: "Success",
-        description: "Profile updated successfully!",
+        title: t("common.success"),
+        description: t("toast.profileUpdated"),
       });
     } catch (error) {
       // Parse Django validation errors
       const errorData = error.response?.data;
-      let errorMessage = "Failed to update profile";
+      let errorMessage = t("toast.failedToUpdate");
 
       if (errorData) {
         // Check for field-specific errors (Django returns errors as objects)
@@ -207,7 +209,7 @@ export default function Settings() {
       }
 
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -219,7 +221,7 @@ export default function Settings() {
       <DashboardLayout>
         <div className="p-8">
           <div className="flex items-center justify-center h-64">
-            <p className="text-muted-foreground">Loading...</p>
+            <p className="text-muted-foreground">{t("common.loading")}</p>
           </div>
         </div>
       </DashboardLayout>
@@ -287,9 +289,9 @@ export default function Settings() {
     <DashboardLayout>
       <div className="p-8">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="font-serif text-3xl text-foreground mb-2">Settings</h1>
+          <h1 className="font-serif text-3xl text-foreground mb-2">{t('settings.title')}</h1>
           <p className="text-muted-foreground">
-            Manage your account preferences and configurations
+            {t('settings.subtitle')}
           </p>
         </motion.div>
 
@@ -311,7 +313,7 @@ export default function Settings() {
                       )}
                     >
                       <section.icon className="h-4 w-4" />
-                      {section.label}
+                      {t(section.labelKey)}
                     </button>
                   ))}
                 </nav>
@@ -325,9 +327,9 @@ export default function Settings() {
               <>
                 <Card>
                   <CardHeader>
-                    <CardTitle>Profile Information</CardTitle>
+                    <CardTitle>{t('settings.profile.title')}</CardTitle>
                     <CardDescription>
-                      Update your personal details and profile picture
+                      {t('settings.profile.subtitle')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -370,10 +372,10 @@ export default function Settings() {
                           onClick={() => fileInputRef.current?.click()}
                           disabled={uploadAvatarMutation.isPending}
                         >
-                          {uploadAvatarMutation.isPending ? "Uploading..." : "Change Avatar"}
+                          {uploadAvatarMutation.isPending ? t("settings.profile.uploading") : t("settings.profile.changeAvatar")}
                         </Button>
                         <p className="text-xs text-muted-foreground">
-                          JPG, PNG, GIF or WEBP. Max 5MB.
+                          {t("settings.profile.avatarHint")}
                         </p>
                       </div>
                     </div>
@@ -383,24 +385,24 @@ export default function Settings() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="text-sm font-medium text-foreground mb-2 block">
-                            Username
+                            {t("settings.profile.username")}
                           </label>
                           <Input
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            placeholder="Enter username"
+                            placeholder={t("settings.profile.usernamePlaceholder")}
                             required
                           />
                         </div>
                         <div>
                           <label className="text-sm font-medium text-foreground mb-2 block">
-                            User ID
+                            {t("settings.profile.userId")}
                           </label>
                           <Input value={user.id || ""} disabled />
                         </div>
                         <div className="md:col-span-2">
                           <label className="text-sm font-medium text-foreground mb-2 block">
-                            Email Address
+                            {t("settings.profile.emailAddress")}
                           </label>
                           <Input type="email" value={user.email || ""} disabled />
                         </div>
@@ -409,18 +411,18 @@ export default function Settings() {
                       {/* Change Password Section - Only show if not Google user */}
                       {!isGoogleUser && (
                         <div className="mt-6 pt-6 border-t border-border">
-                          <h3 className="text-lg font-medium text-foreground mb-4">Change Password</h3>
+                          <h3 className="text-lg font-medium text-foreground mb-4">{t("settings.profile.changePassword")}</h3>
                           <div className="space-y-4">
                             <div>
                               <label className="text-sm font-medium text-foreground mb-2 block">
-                                Current Password
+                                {t("settings.profile.currentPassword")}
                               </label>
                               <div className="relative">
                                 <Input
                                   type={showOldPassword ? "text" : "password"}
                                   value={oldPassword}
                                   onChange={(e) => setOldPassword(e.target.value)}
-                                  placeholder="Enter current password"
+                                  placeholder={t("settings.profile.currentPasswordPlaceholder")}
                                   className="pr-10"
                                 />
                                 <button
@@ -435,14 +437,14 @@ export default function Settings() {
 
                             <div>
                               <label className="text-sm font-medium text-foreground mb-2 block">
-                                New Password
+                                {t("settings.profile.newPassword")}
                               </label>
                               <div className="relative">
                                 <Input
                                   type={showNewPassword1 ? "text" : "password"}
                                   value={newPassword1}
                                   onChange={(e) => setNewPassword1(e.target.value)}
-                                  placeholder="Enter new password"
+                                  placeholder={t("settings.profile.newPasswordPlaceholder")}
                                   className="pr-10"
                                 />
                                 <button
@@ -457,14 +459,14 @@ export default function Settings() {
 
                             <div>
                               <label className="text-sm font-medium text-foreground mb-2 block">
-                                Confirm New Password
+                                {t("settings.profile.confirmNewPassword")}
                               </label>
                               <div className="relative">
                                 <Input
                                   type={showNewPassword2 ? "text" : "password"}
                                   value={newPassword2}
                                   onChange={(e) => setNewPassword2(e.target.value)}
-                                  placeholder="Confirm new password"
+                                  placeholder={t("settings.profile.confirmNewPasswordPlaceholder")}
                                   className="pr-10"
                                 />
                                 <button
@@ -482,7 +484,7 @@ export default function Settings() {
 
                       <div className="flex justify-end mt-6">
                         <Button type="submit" disabled={updateUsernameMutation.isPending || changePasswordMutation.isPending}>
-                          {(updateUsernameMutation.isPending || changePasswordMutation.isPending) ? "Saving..." : "Save Changes"}
+                          {(updateUsernameMutation.isPending || changePasswordMutation.isPending) ? t("common.saving") : t("common.save")}
                         </Button>
                       </div>
                     </form>
@@ -495,9 +497,9 @@ export default function Settings() {
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div>
-                          <CardTitle>Account Information</CardTitle>
+                          <CardTitle>{t("settings.account.title")}</CardTitle>
                           <CardDescription>
-                            Your account details
+                            {t("settings.account.subtitle")}
                           </CardDescription>
                         </div>
                       </div>
@@ -505,7 +507,7 @@ export default function Settings() {
                     <CardContent>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
-                          <span className="text-sm text-muted-foreground">Account Created</span>
+                          <span className="text-sm text-muted-foreground">{t("settings.account.created")}</span>
                           <span className="text-sm font-medium text-foreground">
                             {user.created_at
                               ? new Date(user.created_at).toLocaleDateString()
@@ -522,13 +524,13 @@ export default function Settings() {
             {activeSection === "security" && !isGoogleUser && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Security Settings</CardTitle>
+                  <CardTitle>{t('settings.security.title')}</CardTitle>
                   <CardDescription>
-                    Manage your account security settings
+                    {t('settings.security.subtitle')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">Security settings are available in Profile section.</p>
+                  <p className="text-muted-foreground">{t('settings.security.availableInProfile')}</p>
                 </CardContent>
               </Card>
             )}
@@ -537,9 +539,9 @@ export default function Settings() {
             {activeSection === "appearance" && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Appearance</CardTitle>
+                  <CardTitle>{t('settings.sections.appearance')}</CardTitle>
                   <CardDescription>
-                    Customize the look and feel of the application
+                    {t('settings.appearance.title')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -550,14 +552,14 @@ export default function Settings() {
                       onClick={() => handleThemeChange("light")}
                       className="w-full justify-start"
                     >
-                      <span className="mr-2">☀️</span> Light Mode
+                      <span className="mr-2">☀️</span> {t('common.lightMode', 'Light Mode')}
                     </Button>
                     <Button
                       variant={themeMode === "dark" ? "default" : "outline"}
                       onClick={() => handleThemeChange("dark")}
                       className="w-full justify-start"
                     >
-                      <span className="mr-2">🌙</span> Dark Mode
+                      <span className="mr-2">🌙</span> {t('common.darkMode', 'Dark Mode')}
                     </Button>
                   </div>
                 </CardContent>
@@ -569,10 +571,10 @@ export default function Settings() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    {settingsSections.find((s) => s.id === activeSection)?.label}
+                    {t(`settings.${activeSection}.title`)}
                   </CardTitle>
                   <CardDescription>
-                    Configure your {activeSection} settings
+                    {t(`settings.${activeSection}.subtitle`)}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -586,7 +588,7 @@ export default function Settings() {
                         return null;
                       })()}
                     </div>
-                    <p>Settings for {activeSection} will appear here</p>
+                    <p>{t('settings.settingsWillAppear', { section: activeSection })}</p>
                   </div>
                 </CardContent>
               </Card>

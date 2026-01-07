@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 
 export function LawCard({ document, index, onClick }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -35,7 +37,7 @@ export function LawCard({ document, index, onClick }) {
           {/* Title on Image */}
           <div className="absolute bottom-3 left-4 right-4">
             <h3 className="font-serif text-xl text-white drop-shadow-lg">
-              {document.title}
+              {t(`egyptianLaw.documents.${document.id}.title`)}
             </h3>
           </div>
         </div>
@@ -43,13 +45,13 @@ export function LawCard({ document, index, onClick }) {
         {/* Content */}
         <div className="p-5">
           <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-            {document.description}
+            {t(`egyptianLaw.documents.${document.id}.description`)}
           </p>
 
           {/* Action Hint */}
           <div className="flex items-center gap-2 text-sm text-accent opacity-0 group-hover:opacity-100 transition-opacity">
             <MessageSquare className="h-4 w-4" />
-            <span>Chat with this document</span>
+            <span>{t('egyptianLaw.chatWithDocument')}</span>
           </div>
         </div>
       </div>

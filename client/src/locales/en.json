@@ -16,7 +16,9 @@
     "or": "Or",
     "tryAgain": "Try Again",
     "pages": "pages",
-    "info": "Info"
+    "info": "Info",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode"
   },
   "nav": {
     "home": "Home",
@@ -295,22 +297,22 @@
         "titleAr": "الدستور",
         "description": "The supreme law of Egypt, establishing the framework for government and protecting fundamental rights and freedoms of citizens."
       },
-      "laborLaw": {
+      "labor-law": {
         "title": "Labor Law",
         "titleAr": "قانون العمل",
         "description": "Governs employment relationships, workers' rights, working conditions, wages, and labor disputes in Egypt."
       },
-      "civilCode": {
+      "civil-code": {
         "title": "The Civil Code",
         "titleAr": "القانون المدني",
         "description": "The foundation of private law in Egypt, covering contracts, property, obligations, and civil liability."
       },
-      "taxLaw": {
+      "tax-law": {
         "title": "Tax Law",
         "titleAr": "قانون الضرائب",
         "description": "Regulates taxation in Egypt, including income tax, corporate tax, VAT, and tax obligations for individuals and businesses."
       },
-      "penalCode": {
+      "penal-code": {
         "title": "Penal Code",
         "titleAr": "قانون العقوبات",
         "description": "Defines criminal offenses and their penalties, protecting society and ensuring justice in criminal matters."
@@ -351,18 +353,30 @@
       "subtitle": "Your account details",
       "created": "Account Created"
     },
+    "notifications": {
+      "title": "Notification Settings",
+      "subtitle": "Manage your notification preferences"
+    },
+    "billing": {
+      "title": "Billing & Subscription",
+      "subtitle": "Manage your billing information and subscription"
+    },
     "security": {
       "title": "Security Settings",
       "subtitle": "Manage your account security settings",
       "availableInProfile": "Security settings are available in Profile section."
     },
     "appearance": {
-      "title": "Appearance Settings",
+      "title": "Customize the look and feel of the application",
       "language": "Language",
       "languageDescription": "Select your preferred language",
       "selectLanguage": "Select Language",
       "english": "English",
       "arabic": "Arabic (العربية)"
+    },
+    "help": {
+      "title": "Help & Support",
+      "subtitle": "Get help and support for using the application"
     },
     "configureSettings": "Configure your {{section}} settings",
     "settingsWillAppear": "Settings for {{section}} will appear here",
