@@ -38,10 +38,10 @@ CACHES = {
 # Celery Configuration
 CELERY_BROKER_URL = "redis://redis:6379/0"  # Use DB 0 for Celery
 CELERY_RESULT_BACKEND = "redis://redis:6379/0"
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes max per task
 
@@ -206,19 +206,21 @@ SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 
 # Email Configuration (Brevo/Sendinblue SMTP)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp-relay.brevo.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp-relay.brevo.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = f"{os.getenv('DEFAULT_FROM_NAME', 'DocuMind')} <{os.getenv('DEFAULT_FROM_EMAIL', 'noreply@documind.com')}>"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Password Reset Configuration
 PASSWORD_RESET_TIMEOUT = 86400  # 24 hours in seconds
 DJANGO_REST_PASSWORDRESET_NO_INFORMATION_LEAKAGE = True  # Don't reveal if email exists
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')  # Frontend URL for password reset links
+FRONTEND_URL = os.getenv(
+    "FRONTEND_URL", "http://localhost:5173"
+)  # Frontend URL for password reset links
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
