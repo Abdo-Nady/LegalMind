@@ -245,6 +245,44 @@ export default function Settings() {
     ? settingsSections.filter(section => section.id !== "security")
     : settingsSections;
 
+  // Theme management state
+  const [themeMode, setThemeMode] = useState(() => {
+    // Load theme preference from user-specific localStorage key
+    if (user?.id) {
+      const userThemeKey = `theme_user_${user.id}`;
+      const saved = localStorage.getItem(userThemeKey);
+      // If saved theme is custom, default to light instead
+      if (saved === "custom" || saved === "custom-editing") {
+        return "light";
+      }
+      return saved || "light";
+    }
+    return "light";
+  });
+
+  // handlers: Theme Selection
+  const handleThemeChange = (mode) => {
+    // Update local state
+    setThemeMode(mode);
+
+    // Persist to user-specific localStorage key
+    if (user?.id) {
+      const userThemeKey = `theme_user_${user.id}`;
+      localStorage.setItem(userThemeKey, mode);
+
+      // Dispatch custom event to notify DashboardLayout
+      window.dispatchEvent(new Event("themeChange"));
+    }
+  };
+
+  // export logic: Export settings to alert
+  const handleExport = () => {
+    const exportData = {
+      mode_type: themeMode
+    };
+    alert(JSON.stringify(exportData, null, 2));
+  };
+
   return (
     <DashboardLayout>
       <div className="p-8">
@@ -495,7 +533,39 @@ export default function Settings() {
               </Card>
             )}
 
-            {activeSection !== "profile" && activeSection !== "security" && (
+            {/* Appearance Settings Section */}
+            {activeSection === "appearance" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Appearance</CardTitle>
+                  <CardDescription>
+                    Customize the look and feel of the application
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Mode Selection */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button
+                      variant={themeMode === "light" ? "default" : "outline"}
+                      onClick={() => handleThemeChange("light")}
+                      className="w-full justify-start"
+                    >
+                      <span className="mr-2">☀️</span> Light Mode
+                    </Button>
+                    <Button
+                      variant={themeMode === "dark" ? "default" : "outline"}
+                      onClick={() => handleThemeChange("dark")}
+                      className="w-full justify-start"
+                    >
+                      <span className="mr-2">🌙</span> Dark Mode
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Generic Placeholder for other sections */}
+            {activeSection !== "profile" && activeSection !== "security" && activeSection !== "appearance" && (
               <Card>
                 <CardHeader>
                   <CardTitle>

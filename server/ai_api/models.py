@@ -1,5 +1,13 @@
 from django.db import models
 from django.conf import settings
+import uuid
+import os
+
+def document_upload_path(instance, filename):
+    """Generate a UUID-based filename to prevent collisions."""
+    ext = filename.split('.')[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    return os.path.join('documents/', filename)
 
 
 class Document(models.Model):
@@ -20,7 +28,7 @@ class Document(models.Model):
         related_name='documents'
     )
     title = models.CharField(max_length=255, blank=True)
-    file = models.FileField(upload_to='documents/')
+    file = models.FileField(upload_to=document_upload_path)
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LayoutDashboard, Scale, Settings, LogOut, Menu, X, LogIn, Home } from "lucide-react";
@@ -23,6 +23,70 @@ export function DashboardLayout({ children }) {
   const { logout, isGuest, user } = useAuth();
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+
+  // Apply theme on mount and whenever localStorage changes
+  useEffect(() => {
+    const applyTheme = () => {
+      const root = document.documentElement;
+
+      // Reset existing classes
+      root.classList.remove("light", "dark");
+
+      // Guest mode is always light theme
+      if (isGuest) {
+        root.classList.add("light");
+        return;
+      }
+
+      // For authenticated users, use user-specific theme
+      if (user?.id) {
+        const userThemeKey = `theme_user_${user.id}`;
+        const saved = localStorage.getItem(userThemeKey);
+
+        // Clean up old global theme data and custom theme data
+        localStorage.removeItem("mode_type");
+        localStorage.removeItem("colors");
+        localStorage.removeItem("mode_name");
+
+        // Apply theme - default to light if not set
+        if (saved === "dark") {
+          root.classList.add("dark");
+        } else {
+          root.classList.add("light");
+          // Save light as default for this user if not set
+          if (!saved) {
+            localStorage.setItem(userThemeKey, "light");
+          }
+        }
+      }
+    };
+
+    // Only apply theme if user is loaded
+    if (user || isGuest) {
+      applyTheme();
+    }
+
+    // Listen for storage changes (when Settings updates the theme)
+    const handleStorageChange = (e) => {
+      if (e.key?.startsWith("theme_user_")) {
+        applyTheme();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Custom event for same-tab updates
+    const handleThemeChange = () => {
+      applyTheme();
+    };
+
+    window.addEventListener("themeChange", handleThemeChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("themeChange", handleThemeChange);
+    };
+  }, [user, isGuest]);
 
   const handleSignOut = async () => {
     await logout();
