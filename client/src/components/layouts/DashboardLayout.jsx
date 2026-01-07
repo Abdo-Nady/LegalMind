@@ -49,11 +49,21 @@ export function DashboardLayout({ children }) {
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
       <motion.aside
-        initial={false}
-        animate={{ width: sidebarOpen ? 260 : 72 }}
+        key={isRTL ? 'rtl' : 'ltr'}
+        initial={{
+          width: sidebarOpen ? 260 : 72,
+          right: isRTL ? 0 : 'auto',
+          left: isRTL ? 'auto' : 0
+        }}
+        animate={{
+          width: sidebarOpen ? 260 : 72,
+          right: isRTL ? 0 : 'auto',
+          left: isRTL ? 'auto' : 0
+        }}
+        transition={{ duration: 0.3 }}
         className={cn(
           "fixed top-0 h-full z-40 bg-sidebar border-sidebar-border flex flex-col",
-          isRTL ? "right-0 border-l" : "left-0 border-r"
+          isRTL ? "border-l" : "border-r"
         )}
       >
         {/* Logo */}
@@ -129,7 +139,9 @@ export function DashboardLayout({ children }) {
                     src={user.profile.avatar_url}
                     alt="Profile"
                     className="h-10 w-10 rounded-lg object-cover"
+
                   />
+
                 ) : (
                   <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground text-sm font-medium">
                     {getInitials()}
@@ -146,6 +158,7 @@ export function DashboardLayout({ children }) {
             <div className="mb-3 px-3 py-2 rounded-lg bg-sidebar-accent/30">
               <p className="text-xs text-sidebar-foreground/60 mb-1">{t('sidebar.mode')}</p>
               <p className="text-sm font-medium text-sidebar-foreground">{t('sidebar.guest')}</p>
+
             </div>
           )}
           <button
