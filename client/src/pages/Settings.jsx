@@ -247,13 +247,17 @@ export default function Settings() {
 
   // Theme management state
   const [themeMode, setThemeMode] = useState(() => {
-    // Load theme preference from localStorage or default
-    const saved = localStorage.getItem("mode_type");
-    // If saved theme is custom, default to light instead
-    if (saved === "custom" || saved === "custom-editing") {
-      return "light";
+    // Load theme preference from user-specific localStorage key
+    if (user?.id) {
+      const userThemeKey = `theme_user_${user.id}`;
+      const saved = localStorage.getItem(userThemeKey);
+      // If saved theme is custom, default to light instead
+      if (saved === "custom" || saved === "custom-editing") {
+        return "light";
+      }
+      return saved || "light";
     }
-    return saved || "light";
+    return "light";
   });
 
   // handlers: Theme Selection
@@ -261,11 +265,14 @@ export default function Settings() {
     // Update local state
     setThemeMode(mode);
 
-    // Persist to localStorage
-    localStorage.setItem("mode_type", mode);
+    // Persist to user-specific localStorage key
+    if (user?.id) {
+      const userThemeKey = `theme_user_${user.id}`;
+      localStorage.setItem(userThemeKey, mode);
 
-    // Dispatch custom event to notify DashboardLayout
-    window.dispatchEvent(new Event("themeChange"));
+      // Dispatch custom event to notify DashboardLayout
+      window.dispatchEvent(new Event("themeChange"));
+    }
   };
 
   // export logic: Export settings to alert
@@ -551,13 +558,6 @@ export default function Settings() {
                       className="w-full justify-start"
                     >
                       <span className="mr-2">🌙</span> Dark Mode
-                    </Button>
-                  </div>
-
-                  {/* Export Section */}
-                  <div className="pt-4 border-t border-border">
-                    <Button variant="secondary" onClick={handleExport} className="w-full sm:w-auto">
-                      Export Settings JSON
                     </Button>
                   </div>
                 </CardContent>

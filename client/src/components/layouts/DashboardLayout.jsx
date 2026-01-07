@@ -22,33 +22,47 @@ export function DashboardLayout({ children }) {
   useEffect(() => {
     const applyTheme = () => {
       const root = document.documentElement;
-      const saved = localStorage.getItem("mode_type");
-
-      // Clean up old custom theme data
-      localStorage.removeItem("colors");
-      localStorage.removeItem("mode_name");
 
       // Reset existing classes
       root.classList.remove("light", "dark");
 
-      // Apply theme - default to light if custom or not set
-      if (saved === "dark") {
-        root.classList.add("dark");
-      } else {
+      // Guest mode is always light theme
+      if (isGuest) {
         root.classList.add("light");
-        // Ensure light is saved if it was custom or empty
-        if (saved !== "light") {
-          localStorage.setItem("mode_type", "light");
+        return;
+      }
+
+      // For authenticated users, use user-specific theme
+      if (user?.id) {
+        const userThemeKey = `theme_user_${user.id}`;
+        const saved = localStorage.getItem(userThemeKey);
+
+        // Clean up old global theme data and custom theme data
+        localStorage.removeItem("mode_type");
+        localStorage.removeItem("colors");
+        localStorage.removeItem("mode_name");
+
+        // Apply theme - default to light if not set
+        if (saved === "dark") {
+          root.classList.add("dark");
+        } else {
+          root.classList.add("light");
+          // Save light as default for this user if not set
+          if (!saved) {
+            localStorage.setItem(userThemeKey, "light");
+          }
         }
       }
     };
 
-    // Apply theme immediately
-    applyTheme();
+    // Only apply theme if user is loaded
+    if (user || isGuest) {
+      applyTheme();
+    }
 
     // Listen for storage changes (when Settings updates the theme)
     const handleStorageChange = (e) => {
-      if (e.key === "mode_type") {
+      if (e.key?.startsWith("theme_user_")) {
         applyTheme();
       }
     };
@@ -66,7 +80,7 @@ export function DashboardLayout({ children }) {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("themeChange", handleThemeChange);
     };
-  }, []);
+  }, [user, isGuest]);
 
   const handleSignOut = async () => {
     await logout();
