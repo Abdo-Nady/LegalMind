@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { LayoutDashboard, FileText, Settings, LogOut, Menu, X, Sparkles, LogIn } from "lucide-react";
@@ -17,6 +17,56 @@ export function DashboardLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, isGuest, user } = useAuth();
+
+  // Apply theme on mount and whenever localStorage changes
+  useEffect(() => {
+    const applyTheme = () => {
+      const root = document.documentElement;
+      const saved = localStorage.getItem("mode_type");
+
+      // Clean up old custom theme data
+      localStorage.removeItem("colors");
+      localStorage.removeItem("mode_name");
+
+      // Reset existing classes
+      root.classList.remove("light", "dark");
+
+      // Apply theme - default to light if custom or not set
+      if (saved === "dark") {
+        root.classList.add("dark");
+      } else {
+        root.classList.add("light");
+        // Ensure light is saved if it was custom or empty
+        if (saved !== "light") {
+          localStorage.setItem("mode_type", "light");
+        }
+      }
+    };
+
+    // Apply theme immediately
+    applyTheme();
+
+    // Listen for storage changes (when Settings updates the theme)
+    const handleStorageChange = (e) => {
+      if (e.key === "mode_type") {
+        applyTheme();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Custom event for same-tab updates
+    const handleThemeChange = () => {
+      applyTheme();
+    };
+
+    window.addEventListener("themeChange", handleThemeChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("themeChange", handleThemeChange);
+    };
+  }, []);
 
   const handleSignOut = async () => {
     await logout();
