@@ -1,0 +1,543 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Cairo:wght@300;400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+  Design System: "The Trusted Counsel"
+  Legal document analysis platform with premium, authoritative aesthetic.
+  All colors in HSL format.
+*/
+
+@layer base {
+  :root {
+    /* Core Brand Colors */
+    --background: 40 33% 98%;
+    --foreground: 213 70% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 213 70% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 70% 15%;
+
+    /* Deep Navy - Authority */
+    --primary: 213 70% 15%;
+    --primary-foreground: 40 33% 98%;
+
+    /* Metallic Gold - Premium */
+    --secondary: 38 45% 58%;
+    --secondary-foreground: 213 70% 15%;
+
+    /* Muted surfaces */
+    --muted: 40 20% 94%;
+    --muted-foreground: 213 20% 45%;
+
+    /* Teal Accent - Modernity */
+    --accent: 168 76% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive / Risk */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Warning / Medium Risk */
+    --warning: 38 92% 50%;
+    --warning-foreground: 213 70% 15%;
+
+    /* Success States */
+    --success: 168 76% 40%;
+    --success-foreground: 0 0% 100%;
+
+    /* UI Elements */
+    --border: 213 20% 88%;
+    --input: 213 20% 88%;
+    --ring: 168 76% 40%;
+
+    --radius: 0.625rem;
+
+    /* Sidebar */
+    --sidebar-background: 213 70% 15%;
+    --sidebar-foreground: 40 33% 98%;
+    --sidebar-primary: 38 45% 58%;
+    --sidebar-primary-foreground: 213 70% 15%;
+    --sidebar-accent: 213 60% 22%;
+    --sidebar-accent-foreground: 40 33% 98%;
+    --sidebar-border: 213 50% 25%;
+    --sidebar-ring: 168 76% 40%;
+
+    /* Custom Properties */
+    --gold-glow: 0 0 40px hsl(38 45% 58% / 0.3);
+    --navy-glow: 0 0 60px hsl(213 70% 15% / 0.15);
+    --teal-glow: 0 0 30px hsl(168 76% 40% / 0.25);
+
+    /* Gradients */
+    --gradient-premium: linear-gradient(135deg, hsl(38 45% 58%), hsl(38 55% 68%));
+    --gradient-navy: linear-gradient(180deg, hsl(213 70% 15%), hsl(213 70% 10%));
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%), hsl(40 33% 98%));
+    --gradient-hero: linear-gradient(135deg, hsl(213 70% 12%), hsl(213 70% 18%));
+  }
+
+  .dark {
+    --background: 213 70% 8%;
+    --foreground: 40 33% 98%;
+
+    --card: 213 60% 12%;
+    --card-foreground: 40 33% 98%;
+
+    --popover: 213 60% 12%;
+    --popover-foreground: 40 33% 98%;
+
+    --primary: 40 33% 98%;
+    --primary-foreground: 213 70% 15%;
+
+    --secondary: 38 45% 58%;
+    --secondary-foreground: 213 70% 15%;
+
+    --muted: 213 50% 18%;
+    --muted-foreground: 213 20% 65%;
+
+    --accent: 168 76% 45%;
+    --accent-foreground: 213 70% 10%;
+
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 213 40% 20%;
+    --input: 213 40% 20%;
+    --ring: 168 76% 45%;
+
+    --sidebar-background: 213 70% 6%;
+    --sidebar-foreground: 40 33% 98%;
+    --sidebar-primary: 38 45% 58%;
+    --sidebar-primary-foreground: 213 70% 8%;
+    --sidebar-accent: 213 50% 15%;
+    --sidebar-accent-foreground: 40 33% 98%;
+    --sidebar-border: 213 40% 15%;
+    --sidebar-ring: 168 76% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-serif;
+  }
+}
+
+@layer utilities {
+  .font-serif {
+    font-family: 'DM Serif Display', Georgia, serif;
+  }
+
+  .font-sans {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Premium Effects */
+  .gold-glow {
+    box-shadow: var(--gold-glow);
+  }
+
+  .navy-glow {
+    box-shadow: var(--navy-glow);
+  }
+
+  .teal-glow {
+    box-shadow: var(--teal-glow);
+  }
+
+  .glass-surface {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+
+  .premium-border {
+    @apply border border-secondary/30;
+  }
+
+  /* Gradients */
+  .gradient-premium {
+    background: var(--gradient-premium);
+  }
+
+  .gradient-navy {
+    background: var(--gradient-navy);
+  }
+
+  .gradient-surface {
+    background: var(--gradient-surface);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  /* Text Gradients */
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-premium);
+  }
+
+  /* Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+
+  .animate-pulse-subtle {
+    animation: pulseSoft 2s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Stagger delays */
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .delay-500 {
+    animation-delay: 500ms;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulseSoft {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted/50;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/40;
+}
+
+/* Selection */
+::selection {
+  @apply bg-accent/30 text-foreground;
+}
+
+/* Custom Prose Styles for Markdown */
+.prose-legal {
+  @apply text-foreground leading-relaxed;
+}
+
+.prose-legal h1,
+.prose-legal h2,
+.prose-legal h3,
+.prose-legal h4,
+.prose-legal h5,
+.prose-legal h6 {
+  @apply font-serif text-foreground mt-6 mb-3 first:mt-0;
+}
+
+.prose-legal h1 {
+  @apply text-xl font-semibold;
+}
+
+.prose-legal h2 {
+  @apply text-lg font-semibold;
+}
+
+.prose-legal h3 {
+  @apply text-base font-semibold;
+}
+
+.prose-legal p {
+  @apply mb-3 last:mb-0;
+}
+
+.prose-legal ul,
+.prose-legal ol {
+  @apply my-3 pl-5 space-y-1.5;
+}
+
+.prose-legal ul {
+  @apply list-disc;
+}
+
+.prose-legal ol {
+  @apply list-decimal;
+}
+
+.prose-legal li {
+  @apply text-foreground;
+}
+
+.prose-legal li > ul,
+.prose-legal li > ol {
+  @apply mt-1.5 mb-0;
+}
+
+.prose-legal strong {
+  @apply font-semibold text-foreground;
+}
+
+.prose-legal em {
+  @apply italic;
+}
+
+.prose-legal code {
+  @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+}
+
+.prose-legal pre {
+  @apply bg-muted p-3 rounded-lg overflow-x-auto my-3;
+}
+
+.prose-legal pre code {
+  @apply bg-transparent p-0;
+}
+
+.prose-legal blockquote {
+  @apply border-l-4 border-accent/50 pl-4 my-3 italic text-muted-foreground;
+}
+
+.prose-legal hr {
+  @apply my-6 border-border;
+}
+
+.prose-legal a {
+  @apply text-accent underline underline-offset-2 hover:text-accent/80;
+}
+
+.prose-legal table {
+  @apply w-full my-3 text-sm;
+}
+
+.prose-legal th {
+  @apply text-left font-semibold p-2 border-b border-border;
+}
+
+.prose-legal td {
+  @apply p-2 border-b border-border/50;
+}
+
+/* =============================================================================
+   RTL (Right-to-Left) Support for Arabic
+   ============================================================================= */
+
+/* Arabic font families for RTL mode */
+[dir="rtl"] {
+  font-family: 'Cairo', 'Inter', system-ui, sans-serif;
+}
+
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] h5,
+[dir="rtl"] h6,
+[dir="rtl"] .font-serif {
+  font-family: 'Amiri', 'DM Serif Display', Georgia, serif;
+}
+
+/* RTL text alignment */
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+/* RTL margin and padding adjustments */
+[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+/* RTL flex direction */
+[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+[dir="rtl"] .space-x-3 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+[dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+[dir="rtl"] .space-x-6 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+[dir="rtl"] .space-x-8 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+/* RTL sidebar positioning */
+[dir="rtl"] .fixed.left-0 {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .fixed.right-0 {
+  right: auto;
+  left: 0;
+}
+
+/* RTL border adjustments */
+[dir="rtl"] .border-l-4 {
+  border-left-width: 0;
+  border-right-width: 4px;
+}
+
+[dir="rtl"] .border-r {
+  border-right-width: 0;
+  border-left-width: 1px;
+}
+
+/* RTL list adjustments */
+[dir="rtl"] .prose-legal ul,
+[dir="rtl"] .prose-legal ol {
+  padding-left: 0;
+  padding-right: 1.25rem;
+}
+
+/* RTL scrollbar positioning */
+[dir="rtl"]::-webkit-scrollbar {
+  left: 0;
+  right: auto;
+}
+
+/* RTL icon flip for directional icons */
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+/* RTL gap reversing */
+[dir="rtl"] .gap-2,
+[dir="rtl"] .gap-3,
+[dir="rtl"] .gap-4 {
+  direction: rtl;
+}
+
+/* Input field RTL adjustments */
+[dir="rtl"] input,
+[dir="rtl"] textarea {
+  text-align: right;
+}
+
+[dir="rtl"] input::placeholder,
+[dir="rtl"] textarea::placeholder {
+  text-align: right;
+}
+
+/* RTL-specific prose adjustments */
+[dir="rtl"] .prose-legal blockquote {
+  border-left: 0;
+  border-right: 4px solid;
+  padding-left: 0;
+  padding-right: 1rem;
+  @apply border-accent/50;
+}
+
+[dir="rtl"] .prose-legal th {
+  text-align: right;
+}

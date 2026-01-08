@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with pgvector (for Django data + AI embeddings)
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: documind_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-documind}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    command: postgres -c shared_preload_libraries=vector
+
+  # Redis (for caching)
+  redis:
+    image: redis:7-alpine
+    container_name: documind_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  # Django Backend
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: documind_server
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  # Celery Worker for async tasks
+  celery_worker:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: documind_celery_worker
+    restart: unless-stopped
+    command: celery -A config worker --loglevel=info
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server:/app
+    depends_on:
+      - db
+      - redis
+      - server
+
+  # React Frontend (Vite)
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: documind_client
+    restart: unless-stopped
+    env_file:
+      - ./client/.env
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+
+volumes:
+  postgres_data:

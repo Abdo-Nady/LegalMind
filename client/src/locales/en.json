@@ -1,0 +1,427 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "delete": "Delete",
+    "back": "Back",
+    "next": "Next",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "continueAsGuest": "Continue as Guest",
+    "or": "Or",
+    "tryAgain": "Try Again",
+    "pages": "pages",
+    "info": "Info",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode"
+  },
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "howItWorks": "How It Works",
+    "security": "Security",
+    "getStarted": "Get Started",
+    "dashboard": "Dashboard",
+    "egyptianLaw": "Egyptian Law",
+    "settings": "Settings"
+  },
+  "sidebar": {
+    "signedInAs": "Signed in as",
+    "mode": "Mode",
+    "guest": "Guest"
+  },
+  "landing": {
+    "badge": "#1 AI for Egyptian Law",
+    "heroTitle1": "Analyze legal documents",
+    "heroTitle2": "with AI-powered clarity",
+    "heroSubtitle": "Upload contracts, analyze risks, and get instant answers. Powered by AI that understands legal language.",
+    "placeholder": "Ask a question about your contract...",
+    "uploadPdf": "Upload PDF",
+    "trustIndicators": {
+      "security": "Enterprise-grade security",
+      "instant": "Instant analysis",
+      "certified": "Certified"
+    },
+    "typingPrompts": {
+      "riskClauses": "What are the high-risk clauses in this contract?",
+      "obligations": "Summarize the key obligations and liabilities...",
+      "termination": "Are there any unusual termination clauses?",
+      "negotiation": "What negotiation points should I focus on?",
+      "payment": "Identify all payment terms and deadlines...",
+      "indemnification": "What are the indemnification provisions?"
+    },
+    "howItWorks": {
+      "badge": "How It Works",
+      "title": "Three steps to smarter contracts",
+      "subtitle": "From upload to insights in under a minute",
+      "step1": {
+        "number": "01",
+        "title": "Upload Your Document",
+        "description": "Drag and drop your contract, NDA, or any legal document. We support PDF files up to 50MB."
+      },
+      "step2": {
+        "number": "02",
+        "title": "AI Analyzes Content",
+        "description": "Our AI reads and understands the legal language, identifying key clauses, risks, and obligations."
+      },
+      "step3": {
+        "number": "03",
+        "title": "Ask Questions & Get Answers",
+        "description": "Chat with your document. Ask anything and get instant answers with page citations."
+      }
+    },
+    "features": {
+      "badge": "Features",
+      "title": "Everything You Need for Document Analysis",
+      "subtitle": "Powerful tools designed specifically for legal professionals",
+      "riskDetection": {
+        "title": "Instant Risk Detection",
+        "description": "AI automatically identifies high-risk clauses, unusual terms, and potential issues the moment you upload a document."
+      },
+      "documentChat": {
+        "title": "Intelligent Document Chat",
+        "description": "Ask questions about your contracts in plain English. Get answers with precise citations and page references."
+      },
+      "clauseAnalysis": {
+        "title": "Smart Clause Analysis",
+        "description": "Compare clauses against industry standards. Get recommendations for stronger language and better protections."
+      },
+      "automatedSummaries": {
+        "title": "Automated Summaries",
+        "description": "Generate executive summaries highlighting key terms, obligations, and important dates automatically."
+      },
+      "enterpriseSecurity": {
+        "title": "Enterprise Security",
+        "description": "SOC 2 Type II certified. Bank-grade encryption. Your documents never leave your control."
+      },
+      "lightningFast": {
+        "title": "Lightning Fast",
+        "description": "Analyze a 50-page contract in under 30 seconds. Process hundreds of documents in parallel."
+      }
+    },
+    "security": {
+      "badge": "Security",
+      "title": "Your documents are safe with us",
+      "subtitle": "We understand the sensitivity of legal documents. That's why we've built enterprise-grade security into every layer of our platform.",
+      "checklist": {
+        "soc2": "SOC 2 Type II certified infrastructure",
+        "encryption": "256-bit AES encryption at rest and in transit",
+        "deletion": "Documents automatically deleted after 30 days",
+        "noTraining": "No data used for AI training",
+        "compliance": "GDPR and CCPA compliant"
+      },
+      "bankGrade": "Bank-Grade Security",
+      "trustedBy": "Trusted by 500+ law firms",
+      "stats": {
+        "encryption": "Encryption",
+        "uptime": "Uptime SLA",
+        "certified": "Certified",
+        "compliant": "Compliant"
+      }
+    },
+    "cta": {
+      "title1": "Ready to Transform Your",
+      "title2": "Document Review?",
+      "subtitle": "Join hundreds of leading law firms and legal teams already using LegalMind.ai to save time and reduce risk.",
+      "startTrial": "Start Free Trial",
+      "scheduleDemo": "Schedule Demo",
+      "benefits": {
+        "noCard": "No credit card required",
+        "trial": "14-day free trial",
+        "cancel": "Cancel anytime"
+      }
+    },
+    "footer": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "security": "Security",
+      "contact": "Contact",
+      "copyright": "2024 LegalMind.ai. All rights reserved."
+    }
+  },
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "createAccount": "Create your account",
+    "enterCredentials": "Enter your credentials to access your documents",
+    "startTrial": "Start your free trial with full access",
+    "orContinueWith": "Or continue with email",
+    "email": "Email address",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "username": "Username",
+    "forgotPassword": "Forgot password?",
+    "googleSignIn": "Google",
+    "googleLoading": "Loading...",
+    "googleNotLoaded": "Google Sign-In is not loaded. Please refresh the page.",
+    "createAccountBtn": "Create Account",
+    "termsAgree": "By signing up, you agree to our",
+    "termsOfService": "Terms of Service",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
+    "trustedBy": "Trusted by leading law firms",
+    "heroTitle": "Intelligent Document",
+    "heroTitleHighlight": "Analysis",
+    "heroSubtitle": "Transform how you review contracts and legal documents with AI-powered insights, risk detection, and intelligent chat.",
+    "features": {
+      "riskAssessment": "Instant risk assessment and clause analysis",
+      "aiQA": "AI-powered Q&A with document citations",
+      "encryption": "Secure, enterprise-grade encryption"
+    },
+    "passwordsDontMatch": "Passwords don't match",
+    "invalidCredentials": "Invalid email or password",
+    "accountCreationFailed": "Failed to create account",
+    "googleSignInFailed": "Failed to sign in with Google"
+  },
+  "forgotPassword": {
+    "title": "Forgot Password?",
+    "subtitle": "No worries, we'll send you reset instructions",
+    "checkEmail": "Check your email for reset instructions",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "name@example.com",
+    "sendResetLink": "Send Reset Link",
+    "sending": "Sending...",
+    "backToLogin": "Back to Login",
+    "emailSent": "Email Sent!",
+    "emailSentMessage": "If an account exists with <strong>{{email}}</strong>, you will receive password reset instructions shortly.",
+    "didntReceive": "Didn't receive the email?",
+    "tips": {
+      "checkSpam": "Check your spam or junk folder",
+      "correctEmail": "Make sure you entered the correct email address",
+      "waitFewMinutes": "Wait a few minutes and check again"
+    },
+    "tryAnotherEmail": "Try Another Email",
+    "needHelp": "Need help?",
+    "contactSupport": "Contact Support",
+    "enterEmail": "Please enter your email address"
+  },
+  "resetPassword": {
+    "title": "Set New Password",
+    "subtitle": "Enter your new password below",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmNewPassword": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Confirm new password",
+    "resetButton": "Reset Password",
+    "resetting": "Resetting Password...",
+    "minCharacters": "Must be at least 8 characters",
+    "invalidLink": "Invalid Reset Link",
+    "linkExpired": "This password reset link is invalid or has expired",
+    "linkExpiredMessage": "Password reset links expire after 24 hours for security reasons. Please request a new reset link.",
+    "requestNewLink": "Request New Link",
+    "successTitle": "Password Reset Successful!",
+    "successMessage": "Your password has been changed successfully",
+    "redirecting": "You can now log in with your new password. Redirecting to login page...",
+    "goToLogin": "Go to Login",
+    "passwordTooShort": "Password must be at least 8 characters long",
+    "passwordsDontMatch": "Passwords do not match",
+    "invalidOrExpired": "Invalid or expired reset link. Please request a new one."
+  },
+  "dashboard": {
+    "title": "Document Dashboard",
+    "subtitle": "Analyze and manage your legal documents with AI-powered insights",
+    "searchPlaceholder": "Search documents...",
+    "filters": "Filters",
+    "noDocuments": "No documents yet",
+    "noDocumentsMessage": "Upload your first legal document to get started with AI-powered analysis",
+    "noSearchResults": "No documents match your search",
+    "failedToLoad": "Failed to load documents",
+    "openDocument": "Open Document",
+    "deleteConfirm": "Are you sure you want to delete this document?",
+    "documentStatus": {
+      "processing": "Processing",
+      "ready": "Ready",
+      "failed": "Failed",
+      "uploaded": "Uploaded"
+    }
+  },
+  "upload": {
+    "title": "Upload Document",
+    "uploading": "Uploading document...",
+    "processing": "Processing and analyzing your PDF",
+    "dropHere": "Drop your PDF here",
+    "clickToBrowse": "or click to browse files",
+    "success": "Document uploaded successfully! Processing will begin shortly.",
+    "failed": "Failed to upload document",
+    "deleted": "Document deleted successfully",
+    "deleteFailed": "Failed to delete document"
+  },
+  "documentWorkbench": {
+    "loading": "Loading document...",
+    "errorLoading": "Failed to load document",
+    "backToDashboard": "Back to Dashboard",
+    "processing": "Processing Your Document",
+    "processingMessage": "We're extracting text, analyzing content, and generating embeddings. This page will automatically refresh when ready.",
+    "checkingStatus": "Checking status every 3 seconds...",
+    "processingFailed": "Document processing failed",
+    "share": "Share",
+    "export": "Export",
+    "exportAsPdf": "Export as PDF",
+    "legalInsights": "Legal Insights",
+    "executiveSummary": "Executive Summary",
+    "generateFirst": "Generate insights or summary first to enable export",
+    "moreOptions": "More Options"
+  },
+  "chat": {
+    "title": "Chat",
+    "insights": "Insights",
+    "summary": "Summary",
+    "askQuestion": "Ask questions about this document",
+    "tryAsking": "Try: \"What are the key terms?\" or \"Summarize the liability clauses\"",
+    "askPlaceholder": "Ask about this document...",
+    "analyzing": "Analyzing document...",
+    "analyzingClauses": "Analyzing clauses...",
+    "generatingSummary": "Generating summary...",
+    "legalClauseAnalysis": "Legal Clause Analysis",
+    "executiveSummary": "Executive Summary",
+    "noInsights": "No insights generated yet",
+    "noSummary": "No summary generated yet",
+    "generateInsights": "Generate Insights",
+    "generateSummary": "Generate Summary",
+    "thinking": "Thinking..."
+  },
+  "egyptianLaw": {
+    "title": "Chat with Egyptian Law",
+    "titleAr": "تحدث مع القانون المصري",
+    "subtitle": "Explore and ask questions about Egypt's major legal codes. Our AI assistant will help you understand the laws, find relevant articles, and explain legal concepts.",
+    "aboutTitle": "About These Documents",
+    "aboutDescription": "These are the official Egyptian legal codes that have been pre-loaded into our system. You can ask questions in English or Arabic, and our AI will provide relevant information with citations to specific articles and sections. Please note that this is for informational purposes only and does not constitute legal advice.",
+    "chatWithDocument": "Chat with this document",
+    "documents": {
+      "constitution": {
+        "title": "The Constitution",
+        "titleAr": "الدستور",
+        "description": "The supreme law of Egypt, establishing the framework for government and protecting fundamental rights and freedoms of citizens."
+      },
+      "labor-law": {
+        "title": "Labor Law",
+        "titleAr": "قانون العمل",
+        "description": "Governs employment relationships, workers' rights, working conditions, wages, and labor disputes in Egypt."
+      },
+      "civil-code": {
+        "title": "The Civil Code",
+        "titleAr": "القانون المدني",
+        "description": "The foundation of private law in Egypt, covering contracts, property, obligations, and civil liability."
+      },
+      "tax-law": {
+        "title": "Tax Law",
+        "titleAr": "قانون الضرائب",
+        "description": "Regulates taxation in Egypt, including income tax, corporate tax, VAT, and tax obligations for individuals and businesses."
+      },
+      "penal-code": {
+        "title": "Penal Code",
+        "titleAr": "قانون العقوبات",
+        "description": "Defines criminal offenses and their penalties, protecting society and ensuring justice in criminal matters."
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account preferences and configurations",
+    "sections": {
+      "profile": "Profile",
+      "notifications": "Notifications",
+      "security": "Security",
+      "billing": "Billing",
+      "appearance": "Appearance",
+      "help": "Help & Support"
+    },
+    "profile": {
+      "title": "Profile Information",
+      "subtitle": "Update your personal details and profile picture",
+      "changeAvatar": "Change Avatar",
+      "uploading": "Uploading...",
+      "avatarHint": "JPG, PNG, GIF or WEBP. Max 5MB.",
+      "username": "Username",
+      "usernamePlaceholder": "Enter username",
+      "userId": "User ID",
+      "emailAddress": "Email Address",
+      "changePassword": "Change Password",
+      "currentPassword": "Current Password",
+      "currentPasswordPlaceholder": "Enter current password",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmNewPassword": "Confirm New Password",
+      "confirmNewPasswordPlaceholder": "Confirm new password"
+    },
+    "account": {
+      "title": "Account Information",
+      "subtitle": "Your account details",
+      "created": "Account Created"
+    },
+    "notifications": {
+      "title": "Notification Settings",
+      "subtitle": "Manage your notification preferences"
+    },
+    "billing": {
+      "title": "Billing & Subscription",
+      "subtitle": "Manage your billing information and subscription"
+    },
+    "security": {
+      "title": "Security Settings",
+      "subtitle": "Manage your account security settings",
+      "availableInProfile": "Security settings are available in Profile section."
+    },
+    "appearance": {
+      "title": "Customize the look and feel of the application",
+      "language": "Language",
+      "languageDescription": "Select your preferred language",
+      "selectLanguage": "Select Language",
+      "english": "English",
+      "arabic": "Arabic (العربية)"
+    },
+    "help": {
+      "title": "Help & Support",
+      "subtitle": "Get help and support for using the application"
+    },
+    "configureSettings": "Configure your {{section}} settings",
+    "settingsWillAppear": "Settings for {{section}} will appear here",
+    "signedInAs": "Signed in as",
+    "mode": "Mode",
+    "guest": "Guest"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Oops! Page not found",
+    "returnHome": "Return to Home"
+  },
+  "validation": {
+    "usernameRequired": "Username cannot be empty",
+    "noChanges": "No changes to save",
+    "passwordsDontMatch": "New passwords don't match",
+    "passwordMinLength": "Password must be at least 8 characters long",
+    "invalidImage": "Please upload a valid image file (JPG, PNG, GIF, or WEBP)",
+    "fileTooLarge": "File size must be less than 5MB",
+    "deleteAvatarConfirm": "Are you sure you want to delete your avatar?"
+  },
+  "toast": {
+    "avatarUpdated": "Avatar updated successfully!",
+    "avatarDeleted": "Avatar deleted successfully!",
+    "profileUpdated": "Profile updated successfully!",
+    "failedToUpload": "Failed to upload avatar",
+    "failedToDelete": "Failed to delete avatar",
+    "failedToUpdate": "Failed to update profile",
+    "loginSuccess": "Logged in successfully!",
+    "loginGoogleSuccess": "Logged in with Google successfully!",
+    "accountCreated": "Account created successfully!",
+    "documentUploaded": "Document uploaded successfully! Processing will begin shortly.",
+    "documentDeleted": "Document deleted successfully",
+    "insightsExported": "Insights exported successfully",
+    "summaryExported": "Summary exported successfully",
+    "exportFailed": "Failed to export",
+    "noInsightsToExport": "No insights available to export",
+    "noSummaryToExport": "No summary available to export",
+    "passwordResetSent": "Password reset email sent successfully",
+    "passwordResetSuccess": "Password reset successful!",
+    "invalidResetLink": "Invalid or expired reset link. Please request a new one."
+  },
+  "language": {
+    "english": "English",
+    "arabic": "العربية",
+    "switchTo": "Switch language"
+  }
+}
