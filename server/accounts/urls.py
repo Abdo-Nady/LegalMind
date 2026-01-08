@@ -23,14 +23,10 @@ from .views import (
 )
 
 
-# Google OAuth2 Login View
-# For REST API: Frontend gets access_token from Google, then sends it here
-# Use default serializer from dj_rest_auth which handles everything properly
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
-    callback_url = None  # Not needed for REST API
+    callback_url = None
     client_class = OAuth2Client
-    # use default serializer from dj_rest_auth
 
 
 urlpatterns = [
@@ -50,7 +46,5 @@ urlpatterns = [
     path("password/reset/confirm/", PasswordResetConfirmView.as_view(), name="password-reset-confirm"),
     # Profile & Avatar
     path("profile/", UserProfileView.as_view(), name="user-profile"),
-    path(
-        "profile/avatar/", UploadAvatarView.as_view(), name="upload-avatar"
-    ),  # to upload avatar to change avatar
+    path("profile/avatar/", UploadAvatarView.as_view(), name="upload-avatar"),
 ]

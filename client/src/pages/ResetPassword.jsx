@@ -80,7 +80,26 @@ export default function ResetPassword() {
       console.error("Password reset error:", error);
 
       if (error.response?.status === 400) {
-        toast.error("Invalid or expired reset link. Please request a new one.");
+        const errorData = error.response?.data;
+        let errorMessage = "Invalid or expired reset link. Please request a new one.";
+
+        if (errorData) {
+          if (typeof errorData === 'string') {
+            errorMessage = errorData;
+          } else if (errorData.detail) {
+            errorMessage = errorData.detail;
+          } else if (errorData.token) {
+            errorMessage = Array.isArray(errorData.token) ? errorData.token[0] : errorData.token;
+          } else if (errorData.uid) {
+            errorMessage = Array.isArray(errorData.uid) ? errorData.uid[0] : errorData.uid;
+          } else if (errorData.new_password1) {
+            errorMessage = Array.isArray(errorData.new_password1) ? errorData.new_password1[0] : errorData.new_password1;
+          } else if (errorData.new_password2) {
+            errorMessage = Array.isArray(errorData.new_password2) ? errorData.new_password2[0] : errorData.new_password2;
+          }
+        }
+
+        toast.error(errorMessage);
         setTokenValid(false);
       } else {
         toast.error(error.response?.data?.detail || "Failed to reset password. Please try again.");
