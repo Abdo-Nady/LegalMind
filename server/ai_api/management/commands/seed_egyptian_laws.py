@@ -58,6 +58,30 @@ EGYPTIAN_LAWS = [
         "description_ar": "ينظم علاقات العمل وحقوق العمال وظروف العمل والأجور ونزاعات العمل في مصر.",
         "file_name": "القانون-رقم-14-لسنة-2025-بإصدار-قانون-العمل.pdf",
     },
+    {
+        "slug": "civil-code",
+        "title_en": "The Civil Code",
+        "title_ar": "القانون المدني",
+        "description_en": "The foundation of private law in Egypt, governing contracts, obligations, property rights, and personal status for non-Muslims.",
+        "description_ar": "أساس القانون الخاص في مصر، ينظم العقود والالتزامات وحقوق الملكية والأحوال الشخصية لغير المسلمين.",
+        "file_name": "القانون-المدني.pdf",
+    },
+    {
+        "slug": "penal-code",
+        "title_en": "The Penal Code",
+        "title_ar": "قانون العقوبات المصري",
+        "description_en": "Defines criminal offenses and their penalties in Egypt.",
+        "description_ar": "يحدد الجرائم الجنائية وعقوباتها في مصر.",
+        "file_name": "قانون العقوبات المصري.pdf",
+    },
+    {
+        "slug": "tax-procedures",
+        "title_en": "Unified Tax Procedures Law",
+        "title_ar": "قانون الإجراءات الضريبية الموحد",
+        "description_en": "Regulates the procedures for tax assessment, collection, and appeals in Egypt.",
+        "description_ar": "ينظم إجراءات ربط وتحصيل الضرائب والطعن عليها في مصر.",
+        "file_name": "قانون رقم 206 لسنة 2020 بإصدار قانون الإجراءات الضريبية الموحد.pdf",
+    },
     # Add more laws here as PDFs become available:
     # {
     #     "slug": "civil-code",
