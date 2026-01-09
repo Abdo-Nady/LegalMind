@@ -32,3 +32,13 @@ export const SESSION_ENDPOINTS = {
     LIST: '/ai/sessions/',
     DETAIL: (id) => `/ai/sessions/${id}/`,
 };
+
+export const LAW_ENDPOINTS = {
+    LIST: '/ai/laws/',
+    DETAIL: (slug) => `/ai/laws/${slug}/`,
+    CHAT: (slug) => `/ai/laws/${slug}/chat/`,
+    CLAUSES: (slug) => `/ai/laws/${slug}/clauses/`,
+    SUMMARY: (slug) => `/ai/laws/${slug}/summary/`,
+    SESSIONS: '/ai/laws/sessions/',
+    SESSION_DETAIL: (id) => `/ai/laws/sessions/${id}/`,
+};
