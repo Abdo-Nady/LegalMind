@@ -16,7 +16,10 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from .models import Document, ChatSession, ChatMessage
+from .models import (
+    Document, ChatSession, ChatMessage,
+    EgyptianLaw, LawChatSession, LawChatMessage
+)
 from .serializers import (
     DocumentSerializer,
     DocumentUploadSerializer,
@@ -24,13 +27,19 @@ from .serializers import (
     ChatSessionListSerializer,
     ChatQuerySerializer,
     ChatResponseSerializer,
+    EgyptianLawSerializer,
+    EgyptianLawListSerializer,
+    LawChatSessionSerializer,
+    LawChatSessionListSerializer,
 )
 from .langchain_config import (
     get_document_vector_store,
     get_legal_rag_chain,
+    get_egyptian_law_rag_chain,
     get_clause_detection_chain,
     get_summary_chain,
     delete_document_vectors,
+    get_law_vector_store,
 )
 from .tasks import process_pdf_document
 
@@ -355,3 +364,272 @@ class ChatSessionDetailView(RetrieveDestroyAPIView):
 
     def get_queryset(self):
         return ChatSession.objects.filter(user=self.request.user)
+
+
+# ============================================
+# Egyptian Law Views
+# ============================================
+
+class EgyptianLawListView(ListAPIView):
+    """
+    GET /api/ai/laws/
+
+    List all available Egyptian law documents.
+    Only shows laws with 'ready' status (fully seeded).
+    """
+    serializer_class = EgyptianLawListSerializer
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'read'
+
+    def get_queryset(self):
+        return EgyptianLaw.objects.filter(status='ready')
+
+
+class EgyptianLawDetailView(APIView):
+    """
+    GET /api/ai/laws/<slug>/
+
+    Get details of a specific Egyptian law document.
+    """
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'read'
+
+    def get(self, request, slug):
+        try:
+            law = EgyptianLaw.objects.get(slug=slug)
+        except EgyptianLaw.DoesNotExist:
+            return Response(
+                {"error": "Law not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = EgyptianLawSerializer(law, context={'request': request})
+        return Response(serializer.data)
+
+
+class EgyptianLawChatView(APIView):
+    """
+    POST /api/ai/laws/<slug>/chat/
+
+    Chat with a specific Egyptian law using RAG.
+
+    Request body:
+    {
+        "query": "What are the worker's rights?",
+        "session_id": 123  // optional
+    }
+    """
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'chat'
+
+    def post(self, request, slug):
+        # Validate request
+        serializer = ChatQuerySerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get law
+        try:
+            law = EgyptianLaw.objects.get(slug=slug)
+        except EgyptianLaw.DoesNotExist:
+            return Response(
+                {"error": "Law not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if law.status != 'ready':
+            return Response(
+                {"error": f"Law is not ready for chat. Status: {law.status}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        query = serializer.validated_data['query']
+        session_id = serializer.validated_data.get('session_id')
+
+        try:
+            # Get or create chat session
+            if session_id:
+                try:
+                    session = LawChatSession.objects.get(
+                        pk=session_id,
+                        user=request.user,
+                        law=law
+                    )
+                except LawChatSession.DoesNotExist:
+                    return Response(
+                        {"error": "Chat session not found"},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            else:
+                session = LawChatSession.objects.create(
+                    user=request.user,
+                    law=law,
+                    title=query[:50] + "..." if len(query) > 50 else query
+                )
+
+            # Save user message
+            LawChatMessage.objects.create(
+                session=session,
+                role='user',
+                content=query
+            )
+
+            # Get RAG response using Egyptian law specialized chain
+            vector_store = get_law_vector_store(law.slug)
+            rag_chain = get_egyptian_law_rag_chain(vector_store)
+            result = rag_chain.invoke(query)
+
+            answer = result.get("answer", "")
+
+            # Extract source information
+            sources = []
+            retrieved_docs = result.get("retrieved_docs", [])
+            for source_doc in retrieved_docs:
+                sources.append({
+                    "content": source_doc.page_content[:200] + "...",
+                    "page": source_doc.metadata.get("page_number", "N/A"),
+                    "chunk_index": source_doc.metadata.get("chunk_index", "N/A"),
+                })
+
+            # Save assistant message
+            assistant_message = LawChatMessage.objects.create(
+                session=session,
+                role='assistant',
+                content=answer,
+                sources=sources
+            )
+
+            # Update session timestamp
+            session.save()
+
+            return Response({
+                "answer": answer,
+                "sources": sources,
+                "session_id": session.id,
+                "message_id": assistant_message.id,
+            })
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class EgyptianLawClauseDetectionView(APIView):
+    """
+    POST /api/ai/laws/<slug>/clauses/
+
+    Detect and analyze legal clauses in an Egyptian law.
+    """
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'ai_analysis'
+
+    def post(self, request, slug):
+        try:
+            law = EgyptianLaw.objects.get(slug=slug)
+        except EgyptianLaw.DoesNotExist:
+            return Response(
+                {"error": "Law not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if law.status != 'ready':
+            return Response(
+                {"error": f"Law is not ready. Status: {law.status}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            vector_store = get_law_vector_store(law.slug)
+            clause_chain = get_clause_detection_chain(vector_store)
+
+            analysis = clause_chain.invoke(
+                "Identify and analyze all key legal provisions in this law. "
+                "Include articles related to rights, obligations, penalties, "
+                "procedures, and any other important provisions."
+            )
+
+            return Response({
+                "analysis": analysis,
+                "law_slug": law.slug,
+                "law_title": law.title_en,
+            })
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class EgyptianLawSummaryView(APIView):
+    """
+    POST /api/ai/laws/<slug>/summary/
+
+    Generate an executive summary of an Egyptian law.
+    """
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'ai_analysis'
+
+    def post(self, request, slug):
+        try:
+            law = EgyptianLaw.objects.get(slug=slug)
+        except EgyptianLaw.DoesNotExist:
+            return Response(
+                {"error": "Law not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if law.status != 'ready':
+            return Response(
+                {"error": f"Law is not ready. Status: {law.status}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            vector_store = get_law_vector_store(law.slug)
+            summary_chain = get_summary_chain(vector_store)
+
+            summary = summary_chain.invoke(
+                "Generate a comprehensive executive summary of this Egyptian law."
+            )
+
+            return Response({
+                "summary": summary,
+                "law_slug": law.slug,
+                "law_title": law.title_en,
+            })
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class LawChatSessionListView(ListAPIView):
+    """
+    GET /api/ai/laws/sessions/
+
+    List all law chat sessions for the authenticated user.
+    """
+    serializer_class = LawChatSessionListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return LawChatSession.objects.filter(user=self.request.user)
+
+
+class LawChatSessionDetailView(RetrieveDestroyAPIView):
+    """
+    GET /api/ai/laws/sessions/<id>/
+    DELETE /api/ai/laws/sessions/<id>/
+
+    Retrieve or delete a law chat session with full message history.
+    """
+    serializer_class = LawChatSessionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return LawChatSession.objects.filter(user=self.request.user)

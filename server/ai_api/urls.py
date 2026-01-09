@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    # Document views
     DocumentUploadView,
     DocumentListView,
     DocumentDetailView,
@@ -8,6 +9,14 @@ from .views import (
     DocumentSummaryView,
     ChatSessionListView,
     ChatSessionDetailView,
+    # Egyptian Law views
+    EgyptianLawListView,
+    EgyptianLawDetailView,
+    EgyptianLawChatView,
+    EgyptianLawClauseDetectionView,
+    EgyptianLawSummaryView,
+    LawChatSessionListView,
+    LawChatSessionDetailView,
 )
 
 urlpatterns = [
@@ -21,7 +30,16 @@ urlpatterns = [
     path('documents/<int:pk>/clauses/', DocumentClauseDetectionView.as_view(), name='document-clauses'),
     path('documents/<int:pk>/summary/', DocumentSummaryView.as_view(), name='document-summary'),
 
-    # Chat sessions
+    # Chat sessions (user documents)
     path('sessions/', ChatSessionListView.as_view(), name='session-list'),
     path('sessions/<int:pk>/', ChatSessionDetailView.as_view(), name='session-detail'),
+
+    # Egyptian Laws
+    path('laws/', EgyptianLawListView.as_view(), name='law-list'),
+    path('laws/sessions/', LawChatSessionListView.as_view(), name='law-session-list'),
+    path('laws/sessions/<int:pk>/', LawChatSessionDetailView.as_view(), name='law-session-detail'),
+    path('laws/<slug:slug>/', EgyptianLawDetailView.as_view(), name='law-detail'),
+    path('laws/<slug:slug>/chat/', EgyptianLawChatView.as_view(), name='law-chat'),
+    path('laws/<slug:slug>/clauses/', EgyptianLawClauseDetectionView.as_view(), name='law-clauses'),
+    path('laws/<slug:slug>/summary/', EgyptianLawSummaryView.as_view(), name='law-summary'),
 ]
