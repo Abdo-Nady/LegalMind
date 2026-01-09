@@ -398,3 +398,79 @@ def delete_law_vectors(law_slug: str):
         vector_store.delete_collection()
     except Exception:
         pass  # Collection may not exist
+def get_arabic_summary_chain(vector_store: PGVector):
+    """Create a chain for summarizing Arabic legal documents."""
+    # Use MMR for better diversity
+    retriever = vector_store.as_retriever(
+        search_type="mmr",
+        search_kwargs={"k": 15, "fetch_k": 30}
+    )
+
+    prompt = ChatPromptTemplate.from_template("""
+    You are an AI legal expert specializing in Egyptian Law.
+    
+    Please provide a comprehensive summary of the following legal text in Arabic.
+    Focus on the key provisions, rights, obligations, and penalties mentioned.
+    The summary should be structured and easy to read.
+
+    Title: {title}
+    
+    Text content:
+    {context}
+    
+    Summary in Arabic:
+    """)
+    
+    model = ChatOpenAI(model=CHAT_MODEL, temperature=0.3)
+    
+    return (
+        {
+            "context": (lambda x: x["input"]) | retriever | format_docs,
+            "title": lambda x: x["title"],
+            "input": lambda x: x["input"]
+        }
+        | prompt
+        | model
+        | StrOutputParser()
+    )
+
+
+def get_arabic_clauses_chain(vector_store: PGVector):
+    """Create a chain for analyzing Arabic legal clauses."""
+    retriever = vector_store.as_retriever(
+        search_type="mmr",
+        search_kwargs={"k": 15, "fetch_k": 30}
+    )
+
+    prompt = ChatPromptTemplate.from_template("""
+    You are an AI legal expert specializing in Egyptian Law.
+    
+    Analyze the following legal text and extract the most important clauses.
+    For each key clause, provide:
+    1. The core legal principle
+    2. The rights or obligations established
+    3. Any exceptions or conditions
+
+    Present the analysis in Arabic, using professional legal terminology but keeping it accessible.
+    Format the output as a structured Markdown list.
+
+    Title: {title}
+    
+    Text content:
+    {context}
+    
+    Clause Analysis in Arabic:
+    """)
+    
+    model = ChatOpenAI(model=CHAT_MODEL, temperature=0.3)
+    
+    return (
+        {
+            "context": (lambda x: x["input"]) | retriever | format_docs,
+            "title": lambda x: x["title"],
+            "input": lambda x: x["input"]
+        }
+        | prompt
+        | model
+        | StrOutputParser()
+    )

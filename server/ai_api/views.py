@@ -40,6 +40,8 @@ from .langchain_config import (
     get_summary_chain,
     delete_document_vectors,
     get_law_vector_store,
+    get_arabic_summary_chain,
+    get_arabic_clauses_chain,
 )
 from .tasks import process_pdf_document
 
@@ -542,13 +544,15 @@ class EgyptianLawClauseDetectionView(APIView):
 
         try:
             vector_store = get_law_vector_store(law.slug)
-            clause_chain = get_clause_detection_chain(vector_store)
+            # Use Arabic chain for Egyptian laws
+            clause_chain = get_arabic_clauses_chain(vector_store)
 
-            analysis = clause_chain.invoke(
-                "Identify and analyze all key legal provisions in this law. "
-                "Include articles related to rights, obligations, penalties, "
-                "procedures, and any other important provisions."
-            )
+            analysis = clause_chain.invoke({
+                "input": "Identify and analyze all key legal provisions in this law. "
+                         "Include articles related to rights, obligations, penalties, "
+                         "procedures, and any other important provisions.",
+                "title": law.title_ar
+            })
 
             return Response({
                 "analysis": analysis,
@@ -589,11 +593,13 @@ class EgyptianLawSummaryView(APIView):
 
         try:
             vector_store = get_law_vector_store(law.slug)
-            summary_chain = get_summary_chain(vector_store)
+            # Use Arabic chain for Egyptian laws
+            summary_chain = get_arabic_summary_chain(vector_store)
 
-            summary = summary_chain.invoke(
-                "Generate a comprehensive executive summary of this Egyptian law."
-            )
+            summary = summary_chain.invoke({
+                "input": "Generate a comprehensive executive summary of this Egyptian law.",
+                "title": law.title_ar
+            })
 
             return Response({
                 "summary": summary,

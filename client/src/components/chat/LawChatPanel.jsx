@@ -271,16 +271,16 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   <span className="ml-2 text-muted-foreground">
-                    Analyzing law provisions...
+                    جاري تحليل البنود...
                   </span>
                 </div>
               ) : clausesData?.analysis ? (
                 <div className="space-y-3">
-                  <h3 className="font-serif text-lg text-foreground">
-                    Legal Provisions Analysis
+                  <h3 className="font-serif text-lg text-foreground text-right">
+                    تحليل البنود القانونية
                   </h3>
                   <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-                    <div className="prose-legal text-sm">
+                    <div className="prose-legal text-sm" dir="rtl">
                       <ReactMarkdown>{clausesData.analysis}</ReactMarkdown>
                     </div>
                   </div>
@@ -292,7 +292,7 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                     No insights generated yet
                   </p>
                   <Button onClick={() => refetchClauses()} variant="outline">
-                    Generate Insights
+                    تحليل البنود
                   </Button>
                 </div>
               )}
@@ -311,16 +311,16 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   <span className="ml-2 text-muted-foreground">
-                    Generating summary...
+                    جاري تلخيص القانون...
                   </span>
                 </div>
               ) : summaryData?.summary ? (
                 <div className="space-y-3">
-                  <h3 className="font-serif text-lg text-foreground">
-                    Executive Summary
+                  <h3 className="font-serif text-lg text-foreground text-right">
+                    ملخص القانون
                   </h3>
                   <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-                    <div className="prose-legal text-sm">
+                    <div className="prose-legal text-sm" dir="rtl">
                       <ReactMarkdown>{summaryData.summary}</ReactMarkdown>
                     </div>
                   </div>
@@ -332,7 +332,7 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                     No summary generated yet
                   </p>
                   <Button onClick={() => refetchSummary()} variant="outline">
-                    Generate Summary
+                    تلخيص القانون
                   </Button>
                 </div>
               )}
