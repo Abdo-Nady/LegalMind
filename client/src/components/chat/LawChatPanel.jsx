@@ -108,6 +108,46 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
     { id: "notes", label: t("chat.tabs.summary"), icon: FileText },
   ];
 
+  const suggestedPrompts = (lawSlug === "labor-law" ? [
+    "ما هي حقوق العامل في العلاوة السنوية؟",
+    "كيف يتم كتابة عقد العمل؟",
+    "ما هي ساعات العمل القانونية؟",
+    "ما هي حالات إنهاء عقد العمل؟",
+    "ما هي إجازات العامل؟",
+    "ما هي إجراءات فصل العامل لسوء السلوك الجسيم (المادة ٦٩)؟",
+    "هل يجوز لصاحب العمل خفض الراتب أو تغيير المسمى الوظيفي؟",
+    "كيف يتم حساب الساعات الإضافية (Overtime) حسب القانون؟",
+  ] : lawSlug === "constitution" ? [
+    "ما هي حقوقي عند القبض علي أو تفتيش منزلي؟",
+    "هل تكفل الدولة الحق في السكن الملائم؟",
+    "ما هي حقوق الموظفين في التأمين الاجتماعي والمعاشات؟",
+    "كيف يحمي الدستور حرمة الحياة الخاصة والمراسلات؟",
+    "ما هي التزامات الدولة بتوفير الرعاية الصحية المجانية؟",
+  ] : lawSlug === "civil-code" ? [
+    "متى يحق للمالك فسخ عقد الإيجار؟",
+    "ما هي التعويضات عن التأخير في تنفيذ الالتزام؟",
+    "ما هي شروط صحة بيع العقارات والتسجيل؟",
+    "ما هي حقوق الدائن في الحجز على أموال المدين؟",
+    "كيف يتم إثبات الديون التجارية؟",
+  ] : lawSlug === "penal-code" ? [
+    "ما هي حالات الدفاع الشرعي عن النفس؟",
+    "ما الفرق بين الجنحة والجناية في العقوبة؟",
+    "ما هي عقوبة التزوير في المحررات الرسمية؟",
+    "متى تنقضي الدعوى الجنائية بالتصالح؟",
+    "ما هي جرائم الإنترنت وعقوباتها؟",
+  ] : lawSlug === "tax-procedures" ? [
+    "كيف يتم تقديم الإقرار الضريبي إلكترونيًا؟",
+    "ما هي إجراءات الطعن على التقديرات الضريبية؟",
+    "ما هي عقوبة التهرب الضريبي وغرامات التأخير؟",
+    "ما هي شروط الفاتورة الإلكترونية؟",
+    "من هم الملزمون بالتسجيل في ضريبة القيمة المضافة؟",
+  ] : [
+    "ما هي حقوقي الأساسية؟",
+    "اشرح لي أهم المواد القانونية",
+    "ما هي العقوبات المقررة؟",
+    "كيف يحميني القانون في هذا الموقف؟",
+  ]);
+
   return (
     <div className={cn("flex flex-col h-full bg-background", className)} dir={isRTL ? "rtl" : "ltr"}>
       {/* Tabs */}
@@ -158,42 +198,7 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                       {t("chat.examples.title")}
                     </p>
                     <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto">
-                      {(lawSlug === "labor-law" ? [
-                        "ما هي حقوق العامل في العلاوة السنوية؟",
-                        "كيف يتم كتابة عقد العمل؟",
-                        "ما هي ساعات العمل القانونية؟",
-                        "ما هي حالات إنهاء عقد العمل؟",
-                        "ما هي إجازات العامل؟",
-                      ] : lawSlug === "constitution" ? [
-                        "ما هي الحقوق والحريات العامة؟",
-                        "ما هي صلاحيات رئيس الجمهورية؟",
-                        "ما نص المادة الأولى؟",
-                        "ما هي اختصاصات مجلس النواب؟",
-                        "ما هي ضمانات استقلال القضاء؟",
-                      ] : lawSlug === "civil-code" ? [
-                        "ما هي شروط صحة العقد؟",
-                        "ما هي المسئولية التقصيرية؟",
-                        "ما هي أسباب انقضاء الالتزام؟",
-                        "ما هي حقوق الملكية؟",
-                        "ما هي عيوب الإرادة؟",
-                      ] : lawSlug === "penal-code" ? [
-                        "ما هي عقوبة السرقة؟",
-                        "ما هي عقوبة التزوير؟",
-                        "ما هي أسباب الإباحة وموانع العقاب؟",
-                        "ما الفرق بين الجنحة والجناية؟",
-                        "ما هي عقوبة الرشوة؟",
-                      ] : lawSlug === "tax-procedures" ? [
-                        "ما هي إجراءات الطعن الضريبي؟",
-                        "ما هي عقوبة التهرب الضريبي؟",
-                        "كيف يتم تقديم الإقرار الضريبي؟",
-                        "ما هي حقوق الممول؟",
-                        "ما هي الفاتورة الإلكترونية؟",
-                      ] : [
-                        "ما هي حقوقي؟",
-                        "ما نص المادة الأولى؟",
-                        "ما هي العقوبات المنصوص عليها؟",
-                        "اشرح أهم البنود",
-                      ]).map((prompt) => (
+                      {suggestedPrompts.map((prompt) => (
                         <button
                           key={prompt}
                           onClick={() => {
@@ -231,6 +236,19 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
 
               {/* Input */}
               <div className="p-4 border-t border-border bg-card">
+                {messages.length > 0 && (
+                  <div className="flex gap-2 overflow-x-auto pb-3 mb-2 scrollbar-hide mask-fade-right">
+                    {suggestedPrompts.map((prompt) => (
+                      <button
+                        key={prompt}
+                        onClick={() => setInput(prompt)}
+                        className="whitespace-nowrap px-3 py-1.5 text-xs rounded-full bg-accent/10 hover:bg-accent/20 border border-accent/20 text-foreground/80 transition-colors flex-shrink-0"
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <div className="flex items-end gap-2">
                   <div className="flex-1 relative">
                     <textarea
