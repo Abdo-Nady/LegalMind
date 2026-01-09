@@ -1,6 +1,20 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Download, Share2, MoreHorizontal, Sparkles, Loader2, Lightbulb, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Share2,
+  MoreHorizontal,
+  Sparkles,
+  Loader2,
+  Lightbulb,
+  FileText,
+  FileBarChart,
+  BookOpen,
+  Languages,
+  Scale,
+  ChevronRight
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,6 +24,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 
 export function WorkspaceLayout({
@@ -18,11 +35,17 @@ export function WorkspaceLayout({
   documentStatus = "ready",
   onExportInsights,
   onExportSummary,
+  onExportAnalysisReport,
+  onExportCompliance,
+  onExportBilingual,
+  onExportReference,
   onShare,
   insightsAvailable = false,
   summaryAvailable = false,
+  isExporting = false,
 }) {
   const hasExportOptions = insightsAvailable || summaryAvailable;
+  const isReady = documentStatus === "ready";
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
@@ -72,14 +95,20 @@ export function WorkspaceLayout({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" disabled={isExporting}>
+                {isExporting ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4 mr-2" />
+                )}
                 Export
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Export as PDF</DropdownMenuLabel>
               <DropdownMenuSeparator />
+
+              {/* Basic exports */}
               <DropdownMenuItem
                 onClick={onExportInsights}
                 disabled={!insightsAvailable}
@@ -96,11 +125,71 @@ export function WorkspaceLayout({
                 <FileText className="h-4 w-4 mr-2" />
                 <span>Executive Summary</span>
               </DropdownMenuItem>
-              {!hasExportOptions && (
+
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Advanced Reports</DropdownMenuLabel>
+
+              {/* Analysis Report */}
+              <DropdownMenuItem
+                onClick={onExportAnalysisReport}
+                disabled={!hasExportOptions}
+                className="cursor-pointer"
+              >
+                <FileBarChart className="h-4 w-4 mr-2" />
+                <span>Analysis Report</span>
+              </DropdownMenuItem>
+
+              {/* Reference Document */}
+              <DropdownMenuItem
+                onClick={onExportReference}
+                disabled={!isReady}
+                className="cursor-pointer"
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                <span>Reference Document</span>
+              </DropdownMenuItem>
+
+              {/* Bilingual Summary */}
+              <DropdownMenuItem
+                onClick={onExportBilingual}
+                disabled={!isReady}
+                className="cursor-pointer"
+              >
+                <Languages className="h-4 w-4 mr-2" />
+                <span>Bilingual Summary</span>
+              </DropdownMenuItem>
+
+              {/* Compliance Report with submenu */}
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger disabled={!isReady} className="cursor-pointer">
+                  <Scale className="h-4 w-4 mr-2" />
+                  <span>Compliance Report</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-48">
+                  <DropdownMenuItem onClick={() => onExportCompliance?.('labor')} className="cursor-pointer">
+                    Labor Law
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onExportCompliance?.('commercial')} className="cursor-pointer">
+                    Commercial Code
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onExportCompliance?.('civil')} className="cursor-pointer">
+                    Civil Code
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onExportCompliance?.('tax')} className="cursor-pointer">
+                    Tax Law
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onExportCompliance?.('general')} className="cursor-pointer">
+                    General Compliance
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+
+              {!hasExportOptions && !isReady && (
                 <>
                   <DropdownMenuSeparator />
                   <p className="px-2 py-1.5 text-xs text-muted-foreground">
-                    Generate insights or summary first to enable export
+                    Document must be ready to enable exports
                   </p>
                 </>
               )}
@@ -118,3 +207,4 @@ export function WorkspaceLayout({
     </div>
   );
 }
+

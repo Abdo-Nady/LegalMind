@@ -127,3 +127,34 @@ class DocumentSummarySerializer(serializers.Serializer):
         child=serializers.DictField(),
         required=False
     )
+
+
+class ComplianceCheckRequestSerializer(serializers.Serializer):
+    """Serializer for compliance check request."""
+    law_type = serializers.ChoiceField(
+        choices=['labor', 'commercial', 'civil', 'tax', 'general'],
+        default='general',
+        help_text="Type of Egyptian law to check compliance against"
+    )
+
+
+class ComplianceCheckResponseSerializer(serializers.Serializer):
+    """Serializer for compliance check response."""
+    compliance_report = serializers.CharField()
+    law_type = serializers.CharField()
+    document_id = serializers.IntegerField()
+    document_title = serializers.CharField()
+
+
+class BilingualSummaryResponseSerializer(serializers.Serializer):
+    """Serializer for bilingual summary response."""
+    bilingual_summary = serializers.CharField()
+    document_id = serializers.IntegerField()
+    document_title = serializers.CharField()
+
+
+class ReferenceDataResponseSerializer(serializers.Serializer):
+    """Serializer for reference data extraction response."""
+    reference_data = serializers.CharField()
+    document_id = serializers.IntegerField()
+    document_title = serializers.CharField()

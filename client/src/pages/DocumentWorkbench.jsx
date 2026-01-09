@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { motion } from "framer-motion";
 import { GripVertical, Loader2, AlertCircle } from "lucide-react";
@@ -11,7 +11,13 @@ import { queryKeys } from "@/lib/queryClient";
 import { documentService } from "@/services/document.service";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
-import { exportToPDF } from "@/lib/pdf-export";
+import {
+  exportToPDF,
+  exportAnalysisReport,
+  exportComplianceReport,
+  exportBilingualSummary,
+  exportReferenceDocument
+} from "@/lib/pdf-export";
 import { toast } from "sonner";
 
 export default function DocumentWorkbench() {
@@ -41,6 +47,21 @@ export default function DocumentWorkbench() {
     queryFn: () => documentService.getSummary(id),
     enabled: !!id && document?.status === 'ready',
     staleTime: 5 * 60 * 1000,
+  });
+
+  // Compliance mutation (on-demand)
+  const complianceMutation = useMutation({
+    mutationFn: (lawType) => documentService.getCompliance(id, lawType),
+  });
+
+  // Bilingual summary mutation (on-demand)
+  const bilingualMutation = useMutation({
+    mutationFn: () => documentService.getBilingualSummary(id),
+  });
+
+  // Reference data mutation (on-demand)
+  const referenceMutation = useMutation({
+    mutationFn: () => documentService.getReferenceData(id),
   });
 
   // Poll for processing status
@@ -108,6 +129,82 @@ export default function DocumentWorkbench() {
       toast.error('Failed to export summary');
     }
   }, [summaryData, document]);
+
+  const handleExportAnalysisReport = useCallback(() => {
+    if (!clausesData?.analysis && !summaryData?.summary) {
+      toast.error('Generate insights or summary first');
+      return;
+    }
+    try {
+      exportAnalysisReport(
+        clausesData?.analysis,
+        summaryData?.summary,
+        document?.title || 'Document'
+      );
+      toast.success('Analysis report exported successfully');
+    } catch (err) {
+      console.error('Export failed:', err);
+      toast.error('Failed to export analysis report');
+    }
+  }, [clausesData, summaryData, document]);
+
+  const handleExportCompliance = useCallback(async (lawType) => {
+    toast.info(`Generating ${lawType} compliance report...`);
+    try {
+      const result = await complianceMutation.mutateAsync(lawType);
+      if (result?.compliance_report) {
+        exportComplianceReport(
+          result.compliance_report,
+          lawType,
+          document?.title || 'Document'
+        );
+        toast.success('Compliance report exported successfully');
+      } else {
+        toast.error('No compliance data returned');
+      }
+    } catch (err) {
+      console.error('Compliance export failed:', err);
+      toast.error('Failed to generate compliance report');
+    }
+  }, [complianceMutation, document]);
+
+  const handleExportBilingual = useCallback(async () => {
+    toast.info('Generating bilingual summary...');
+    try {
+      const result = await bilingualMutation.mutateAsync();
+      if (result?.bilingual_summary) {
+        exportBilingualSummary(
+          result.bilingual_summary,
+          document?.title || 'Document'
+        );
+        toast.success('Bilingual summary exported successfully');
+      } else {
+        toast.error('No bilingual summary returned');
+      }
+    } catch (err) {
+      console.error('Bilingual export failed:', err);
+      toast.error('Failed to generate bilingual summary');
+    }
+  }, [bilingualMutation, document]);
+
+  const handleExportReference = useCallback(async () => {
+    toast.info('Extracting reference data...');
+    try {
+      const result = await referenceMutation.mutateAsync();
+      if (result?.reference_data) {
+        exportReferenceDocument(
+          result.reference_data,
+          document?.title || 'Document'
+        );
+        toast.success('Reference document exported successfully');
+      } else {
+        toast.error('No reference data returned');
+      }
+    } catch (err) {
+      console.error('Reference export failed:', err);
+      toast.error('Failed to generate reference document');
+    }
+  }, [referenceMutation, document]);
 
   // Loading state
   if (isLoading) {
@@ -180,8 +277,13 @@ export default function DocumentWorkbench() {
       documentStatus={document?.status}
       onExportInsights={handleExportInsights}
       onExportSummary={handleExportSummary}
+      onExportAnalysisReport={handleExportAnalysisReport}
+      onExportCompliance={handleExportCompliance}
+      onExportBilingual={handleExportBilingual}
+      onExportReference={handleExportReference}
       insightsAvailable={!!clausesData?.analysis}
       summaryAvailable={!!summaryData?.summary}
+      isExporting={complianceMutation.isPending || bilingualMutation.isPending || referenceMutation.isPending}
     >
       <PanelGroup direction="horizontal" className="h-full">
         {/* PDF Panel */}
@@ -213,3 +315,4 @@ export default function DocumentWorkbench() {
     </WorkspaceLayout>
   );
 }
+

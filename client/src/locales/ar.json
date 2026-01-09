@@ -263,7 +263,20 @@
     "exportAsPdf": "تصدير كـ PDF",
     "legalInsights": "الرؤى القانونية",
     "executiveSummary": "الملخص التنفيذي",
+    "advancedReports": "التقارير المتقدمة",
+    "analysisReport": "تقرير التحليل",
+    "referenceDocument": "مستند مرجعي",
+    "bilingualSummary": "ملخص ثنائي اللغة",
+    "complianceReport": "تقرير الامتثال",
+    "complianceLaws": {
+      "labor": "قانون العمل",
+      "commercial": "القانون التجاري",
+      "civil": "القانون المدني",
+      "tax": "قانون الضرائب",
+      "general": "الامتثال العام"
+    },
     "generateFirst": "أنشئ الرؤى أو الملخص أولاً لتفعيل التصدير",
+    "documentMustBeReady": "يجب أن يكون المستند جاهزاً لتفعيل التصدير",
     "moreOptions": "المزيد من الخيارات"
   },
   "chat": {

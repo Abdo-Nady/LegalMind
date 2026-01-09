@@ -24,12 +24,16 @@ from .serializers import (
     ChatSessionListSerializer,
     ChatQuerySerializer,
     ChatResponseSerializer,
+    ComplianceCheckRequestSerializer,
 )
 from .langchain_config import (
     get_document_vector_store,
     get_legal_rag_chain,
     get_clause_detection_chain,
     get_summary_chain,
+    get_compliance_check_chain,
+    get_bilingual_summary_chain,
+    get_reference_extraction_chain,
     delete_document_vectors,
 )
 from .tasks import process_pdf_document
@@ -355,3 +359,153 @@ class ChatSessionDetailView(RetrieveDestroyAPIView):
 
     def get_queryset(self):
         return ChatSession.objects.filter(user=self.request.user)
+
+
+class DocumentComplianceView(APIView):
+    """
+    POST /api/ai/documents/<id>/compliance/
+
+    Check document compliance against Egyptian laws.
+    Supports: labor, commercial, civil, tax, or general law types.
+    """
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'ai_analysis'
+
+    def post(self, request, pk):
+        # Validate request
+        serializer = ComplianceCheckRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            doc = Document.objects.get(pk=pk, user=request.user)
+        except Document.DoesNotExist:
+            return Response(
+                {"error": "Document not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if doc.status != 'ready':
+            return Response(
+                {"error": f"Document is not ready. Status: {doc.status}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        law_type = serializer.validated_data.get('law_type', 'general')
+
+        try:
+            vector_store = get_document_vector_store(doc.id)
+            compliance_chain = get_compliance_check_chain(vector_store, law_type)
+
+            compliance_report = compliance_chain.invoke(
+                f"Analyze this document for compliance with Egyptian {law_type} law. "
+                f"Check all relevant requirements and provide a detailed compliance assessment."
+            )
+
+            return Response({
+                "compliance_report": compliance_report,
+                "law_type": law_type,
+                "document_id": doc.id,
+                "document_title": doc.title,
+            })
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class DocumentBilingualSummaryView(APIView):
+    """
+    POST /api/ai/documents/<id>/bilingual-summary/
+
+    Generate a bilingual (Arabic/English) summary of a document.
+    """
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'ai_analysis'
+
+    def post(self, request, pk):
+        try:
+            doc = Document.objects.get(pk=pk, user=request.user)
+        except Document.DoesNotExist:
+            return Response(
+                {"error": "Document not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if doc.status != 'ready':
+            return Response(
+                {"error": f"Document is not ready. Status: {doc.status}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            vector_store = get_document_vector_store(doc.id)
+            bilingual_chain = get_bilingual_summary_chain(vector_store)
+
+            bilingual_summary = bilingual_chain.invoke(
+                "Generate a comprehensive bilingual summary of this legal document "
+                "in both English and Arabic. Include all key terms, dates, financial terms, "
+                "and risk assessment in both languages."
+            )
+
+            return Response({
+                "bilingual_summary": bilingual_summary,
+                "document_id": doc.id,
+                "document_title": doc.title,
+            })
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class DocumentReferenceDataView(APIView):
+    """
+    POST /api/ai/documents/<id>/reference-data/
+
+    Extract structured reference data from a document.
+    Returns: parties, dates, financial terms, clause index, etc.
+    """
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'ai_analysis'
+
+    def post(self, request, pk):
+        try:
+            doc = Document.objects.get(pk=pk, user=request.user)
+        except Document.DoesNotExist:
+            return Response(
+                {"error": "Document not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if doc.status != 'ready':
+            return Response(
+                {"error": f"Document is not ready. Status: {doc.status}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            vector_store = get_document_vector_store(doc.id)
+            reference_chain = get_reference_extraction_chain(vector_store)
+
+            reference_data = reference_chain.invoke(
+                "Extract all structured reference information from this legal document. "
+                "Include document metadata, parties, key dates, financial terms, "
+                "clause index, governing law, and signature requirements."
+            )
+
+            return Response({
+                "reference_data": reference_data,
+                "document_id": doc.id,
+                "document_title": doc.title,
+            })
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

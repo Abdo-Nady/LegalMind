@@ -6,6 +6,9 @@ from .views import (
     DocumentChatView,
     DocumentClauseDetectionView,
     DocumentSummaryView,
+    DocumentComplianceView,
+    DocumentBilingualSummaryView,
+    DocumentReferenceDataView,
     ChatSessionListView,
     ChatSessionDetailView,
 )
@@ -20,6 +23,9 @@ urlpatterns = [
     path('documents/<int:pk>/chat/', DocumentChatView.as_view(), name='document-chat'),
     path('documents/<int:pk>/clauses/', DocumentClauseDetectionView.as_view(), name='document-clauses'),
     path('documents/<int:pk>/summary/', DocumentSummaryView.as_view(), name='document-summary'),
+    path('documents/<int:pk>/compliance/', DocumentComplianceView.as_view(), name='document-compliance'),
+    path('documents/<int:pk>/bilingual-summary/', DocumentBilingualSummaryView.as_view(), name='document-bilingual-summary'),
+    path('documents/<int:pk>/reference-data/', DocumentReferenceDataView.as_view(), name='document-reference-data'),
 
     # Chat sessions
     path('sessions/', ChatSessionListView.as_view(), name='session-list'),

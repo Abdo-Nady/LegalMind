@@ -94,5 +94,39 @@ export const documentService = {
         );
         return response.data;
     },
+
+    /**
+     * Get compliance check for a document against Egyptian laws
+     * @param {number} documentId - Document ID
+     * @param {string} lawType - Type of law: 'labor', 'commercial', 'civil', 'tax', or 'general'
+     */
+    getCompliance: async (documentId, lawType = 'general') => {
+        const response = await axiosInstance.post(
+            DOCUMENT_ENDPOINTS.COMPLIANCE(documentId),
+            { law_type: lawType }
+        );
+        return response.data;
+    },
+
+    /**
+     * Get bilingual (Arabic/English) summary for a document
+     */
+    getBilingualSummary: async (documentId) => {
+        const response = await axiosInstance.post(
+            DOCUMENT_ENDPOINTS.BILINGUAL_SUMMARY(documentId)
+        );
+        return response.data;
+    },
+
+    /**
+     * Get structured reference data from a document
+     * Returns: parties, dates, financial terms, clause index, etc.
+     */
+    getReferenceData: async (documentId) => {
+        const response = await axiosInstance.post(
+            DOCUMENT_ENDPOINTS.REFERENCE_DATA(documentId)
+        );
+        return response.data;
+    },
 };
 

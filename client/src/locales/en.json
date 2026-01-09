@@ -263,7 +263,20 @@
     "exportAsPdf": "Export as PDF",
     "legalInsights": "Legal Insights",
     "executiveSummary": "Executive Summary",
+    "advancedReports": "Advanced Reports",
+    "analysisReport": "Analysis Report",
+    "referenceDocument": "Reference Document",
+    "bilingualSummary": "Bilingual Summary",
+    "complianceReport": "Compliance Report",
+    "complianceLaws": {
+      "labor": "Labor Law",
+      "commercial": "Commercial Code",
+      "civil": "Civil Code",
+      "tax": "Tax Law",
+      "general": "General Compliance"
+    },
     "generateFirst": "Generate insights or summary first to enable export",
+    "documentMustBeReady": "Document must be ready to enable exports",
     "moreOptions": "More Options"
   },
   "chat": {

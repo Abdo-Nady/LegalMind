@@ -26,6 +26,9 @@ export const DOCUMENT_ENDPOINTS = {
     CHAT: (id) => `/ai/documents/${id}/chat/`,
     CLAUSES: (id) => `/ai/documents/${id}/clauses/`,
     SUMMARY: (id) => `/ai/documents/${id}/summary/`,
+    COMPLIANCE: (id) => `/ai/documents/${id}/compliance/`,
+    BILINGUAL_SUMMARY: (id) => `/ai/documents/${id}/bilingual-summary/`,
+    REFERENCE_DATA: (id) => `/ai/documents/${id}/reference-data/`,
 };
 
 export const SESSION_ENDPOINTS = {

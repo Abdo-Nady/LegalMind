@@ -31,6 +31,9 @@ export const queryKeys = {
         detail: (id) => ['documents', id],
         clauses: (id) => ['documents', id, 'clauses'],
         summary: (id) => ['documents', id, 'summary'],
+        compliance: (id, lawType) => ['documents', id, 'compliance', lawType],
+        bilingualSummary: (id) => ['documents', id, 'bilingual-summary'],
+        referenceData: (id) => ['documents', id, 'reference-data'],
     },
     sessions: {
         all: ['sessions'],
