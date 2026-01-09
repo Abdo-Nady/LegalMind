@@ -19,11 +19,11 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
 # Constants
-EMBEDDING_MODEL = "text-embedding-3-small"
+EMBEDDING_MODEL = "text-embedding-3-large"  # Upgraded for better Arabic support
 CHAT_MODEL = "gpt-4o-mini"
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 200
-RETRIEVAL_K = 5
+RETRIEVAL_K = 15  # Increased for better coverage
 
 
 def get_connection_string() -> str:
@@ -142,6 +142,7 @@ def format_docs(docs):
 def get_legal_rag_chain(vector_store: PGVector):
     """
     Build RAG chain optimized for legal document analysis using LCEL.
+    This is the general-purpose chain for user-uploaded documents (typically English).
 
     Args:
         vector_store: PGVector store containing document chunks
@@ -154,7 +155,7 @@ def get_legal_rag_chain(vector_store: PGVector):
         search_kwargs={"k": RETRIEVAL_K}
     )
 
-    system_prompt = """You are DocuMind, an expert legal document analyst.
+    system_prompt = """You are LegalMind, an expert legal document analyst.
 Your role is to help users understand legal documents by providing accurate,
 well-sourced answers based ONLY on the provided document context.
 
@@ -167,6 +168,68 @@ IMPORTANT GUIDELINES:
 5. If asked about legal advice, remind the user to consult a qualified attorney.
 
 Context from the document:
+{context}"""
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_prompt),
+        ("human", "{input}")
+    ])
+
+    llm = get_llm()
+
+    # Build the RAG chain using LCEL
+    rag_chain = (
+        {
+            "context": retriever | format_docs,
+            "input": RunnablePassthrough(),
+            "retrieved_docs": retriever,
+        }
+        | RunnablePassthrough.assign(
+            answer=prompt | llm | StrOutputParser()
+        )
+    )
+
+    return rag_chain
+
+
+def get_egyptian_law_rag_chain(vector_store: PGVector):
+    """
+    Build RAG chain optimized for Egyptian law documents (Arabic content).
+
+    Args:
+        vector_store: PGVector store containing law document chunks
+
+    Returns:
+        A retrieval chain for Egyptian law Q&A
+    """
+    # Use MMR for better diversity in Arabic legal documents
+    retriever = vector_store.as_retriever(
+        search_type="mmr",
+        search_kwargs={
+            "k": RETRIEVAL_K,
+            "fetch_k": 30,  # Fetch more candidates for MMR selection
+            "lambda_mult": 0.7  # Balance between relevance and diversity
+        }
+    )
+
+    system_prompt = """You are LegalMind, an expert legal document analyst specializing in Egyptian law.
+Your role is to help users understand Egyptian legal documents by providing accurate,
+well-sourced answers based on the provided document context.
+
+أنت LegalMind، محلل وثائق قانونية متخصص في القانون المصري.
+
+IMPORTANT GUIDELINES:
+1. Answer in the SAME LANGUAGE as the user's question (Arabic or English).
+2. The context contains excerpts from an Egyptian law document IN ARABIC. 
+   Even if the user's question is in English, search the Arabic context for relevant information.
+3. Synthesize and summarize information from the context to answer the question.
+4. When citing information, reference the specific article (مادة) number if visible in the context.
+5. If you truly cannot find ANY relevant information in the context, state:
+   "I couldn't find specific information about this in the excerpts provided." /
+   "لم أتمكن من إيجاد معلومات محددة حول هذا في المقتطفات المقدمة."
+6. Be helpful - try to provide any relevant information from the context, even if partial.
+
+Context from the document (in Arabic):
 {context}"""
 
     prompt = ChatPromptTemplate.from_messages([
@@ -301,6 +364,36 @@ def delete_document_vectors(document_id: int):
     """
     try:
         collection_name = f"document_{document_id}"
+        vector_store = get_vector_store(collection_name=collection_name)
+        vector_store.delete_collection()
+    except Exception:
+        pass  # Collection may not exist
+
+
+def get_law_vector_store(law_slug: str) -> PGVector:
+    """
+    Get vector store for a specific Egyptian law.
+    Uses collection naming: law_{slug}
+
+    Args:
+        law_slug: The law's slug (e.g., 'constitution')
+
+    Returns:
+        PGVector store for the specific law
+    """
+    collection_name = f"law_{law_slug}"
+    return get_vector_store(collection_name=collection_name)
+
+
+def delete_law_vectors(law_slug: str):
+    """
+    Delete all vectors associated with a law.
+
+    Args:
+        law_slug: The law's slug
+    """
+    try:
+        collection_name = f"law_{law_slug}"
         vector_store = get_vector_store(collection_name=collection_name)
         vector_store.delete_collection()
     except Exception:
