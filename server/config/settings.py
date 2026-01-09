@@ -144,11 +144,11 @@ REST_FRAMEWORK = {
         "anon": "20/minute",  # Anonymous/guest users by ip
         "user": "50/minute",  # Authenticated users
         # AI endpoints (resource-intensive) | we need to make it stricter in deployment
-        "upload": "10/hour",  # Document upload
-        "chat": "30/minute",  # AI chat
-        "ai_analysis": "20/hour",  # Clause detection & summary
+        "upload": "100/hour",  # Document upload
+        "chat": "100/minute",  # AI chat
+        "ai_analysis": "100/minute",  # Clause detection & summary
         # Auth endpoints
-        "dj_rest_auth": "30/minute",  # dj-rest-auth | we need to make it stricter in deployment
+        "dj_rest_auth": "100/minute",  # dj-rest-auth | we need to make it stricter in deployment
         # Standard CRUD
         "read": "50/minute",  # List/detail views
     },
