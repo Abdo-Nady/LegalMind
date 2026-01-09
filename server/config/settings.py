@@ -25,6 +25,9 @@ load_dotenv(BASE_DIR / ".env")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Egyptian Laws static documents directory
+EGYPTIAN_LAWS_DIR = BASE_DIR / "egyptian_laws" / "pdfs"
+
 # Redis Cache Configuration for Rate Limiting
 CACHES = {
     "default": {
