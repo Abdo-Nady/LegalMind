@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
@@ -12,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { exportToPDF } from "@/lib/pdf-export";
 import { toast } from "sonner";
 
-// Query keys for law-related queries
+// Query keys for law-related queries (same as before)
 const lawQueryKeys = {
   detail: (slug) => ["laws", slug],
   clauses: (slug) => ["laws", slug, "clauses"],
@@ -22,7 +23,10 @@ const lawQueryKeys = {
 export default function LawWorkbench() {
   const { lawId } = useParams();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [highlightedPage, setHighlightedPage] = useState();
+
+  const isRTL = i18n.language === "ar";
 
   // Fetch law details
   const { data: law, isLoading, error } = useQuery({
@@ -98,7 +102,7 @@ export default function LawWorkbench() {
         <div className="h-full flex items-center justify-center">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">Loading law document...</p>
+            <p className="text-muted-foreground">{t("documentWorkbench.loadingLaw")}</p>
           </div>
         </div>
       </WorkspaceLayout>
@@ -113,10 +117,10 @@ export default function LawWorkbench() {
           <div className="text-center">
             <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-4" />
             <p className="text-destructive mb-4">
-              {error.message || "Failed to load law document"}
+              {error.message || t("documentWorkbench.failedToLoadLaw")}
             </p>
             <Button onClick={() => navigate("/egyptian-law")}>
-              Back to Egyptian Law
+              {t("documentWorkbench.lawNotAvailable.backToLaws")}
             </Button>
           </div>
         </div>
@@ -132,13 +136,13 @@ export default function LawWorkbench() {
           <div className="text-center max-w-md">
             <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
             <p className="text-foreground font-medium text-lg mb-2">
-              Law Not Available
+              {t("documentWorkbench.lawNotAvailable.title")}
             </p>
             <p className="text-muted-foreground mb-4">
-              This law document is not ready yet. Please check back later.
+              {t("documentWorkbench.lawNotAvailable.message")}
             </p>
             <Button onClick={() => navigate("/egyptian-law")}>
-              Back to Egyptian Law
+              {t("documentWorkbench.lawNotAvailable.backToLaws")}
             </Button>
           </div>
         </div>
@@ -158,43 +162,45 @@ export default function LawWorkbench() {
       insightsAvailable={!!clausesData?.analysis}
       summaryAvailable={!!summaryData?.summary}
     >
-      <PanelGroup direction="horizontal" className="h-full">
-        {/* PDF Panel */}
-        <Panel defaultSize={60} minSize={40}>
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="h-full"
-          >
-            <PDFViewer
-              documentId={lawId}
-              fileUrl={pdfUrl}
-              highlightedPage={highlightedPage}
-              isLaw={true}
-            />
-          </motion.div>
-        </Panel>
+      <div className="h-full" dir="ltr">
+        <PanelGroup direction="horizontal" className="h-full" id="law-workbench-panels">
+          {/* PDF Panel - Always on Local Left (Global Left) */}
+          <Panel defaultSize={60} minSize={40}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="h-full"
+            >
+              <PDFViewer
+                documentId={lawId}
+                fileUrl={pdfUrl}
+                highlightedPage={highlightedPage}
+                isLaw={true}
+              />
+            </motion.div>
+          </Panel>
 
-        {/* Resize Handle */}
-        <PanelResizeHandle className="w-2 bg-border hover:bg-accent/50 transition-colors flex items-center justify-center group">
-          <GripVertical className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors" />
-        </PanelResizeHandle>
+          {/* Resize Handle */}
+          <PanelResizeHandle className="w-2 bg-border hover:bg-accent/50 transition-colors flex items-center justify-center group">
+            <GripVertical className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors" />
+          </PanelResizeHandle>
 
-        {/* Chat Panel */}
-        <Panel defaultSize={40} minSize={30}>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="h-full"
-          >
-            <LawChatPanel
-              lawSlug={lawId}
-              lawTitle={law?.title_ar}
-              onCitationClick={handleCitationClick}
-            />
-          </motion.div>
-        </Panel>
-      </PanelGroup>
+          {/* Chat Panel - Always on Local Right (Global Right) */}
+          <Panel defaultSize={40} minSize={30}>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="h-full"
+            >
+              <LawChatPanel
+                lawSlug={lawId}
+                lawTitle={law?.title_ar}
+                onCitationClick={handleCitationClick}
+              />
+            </motion.div>
+          </Panel>
+        </PanelGroup>
+      </div>
     </WorkspaceLayout>
   );
 }

@@ -10,8 +10,11 @@ import { lawService } from "@/services/law.service";
 
 export default function EgyptianLaw() {
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
   const [readyLaws, setReadyLaws] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const isRTL = i18n.language === "ar";
 
   useEffect(() => {
     const fetchLaws = async () => {
@@ -46,7 +49,7 @@ export default function EgyptianLaw() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
         <Header />
         {loading ? (
           <LoadingState />

@@ -14,7 +14,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 export function PDFViewer({ documentId, fileUrl, className, highlightedPage }) {
   const [numPages, setNumPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [zoom, setZoom] = useState(100);
+  const [zoom, setZoom] = useState(75);
   const [rotation, setRotation] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

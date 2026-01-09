@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,11 +18,14 @@ const lawQueryKeys = {
 };
 
 export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) {
+  const { t, i18n } = useTranslation();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [sessionId, setSessionId] = useState(null);
   const [activeTab, setActiveTab] = useState("chat");
   const messagesEndRef = useRef(null);
+
+  const isRTL = i18n.language === "ar";
 
   // Fetch clauses for insights tab
   const {
@@ -99,13 +103,13 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
   };
 
   const tabs = [
-    { id: "chat", label: "Chat", icon: MessageSquare },
-    { id: "insights", label: "Insights", icon: Lightbulb },
-    { id: "notes", label: "Summary", icon: FileText },
+    { id: "chat", label: t("chat.tabs.chat"), icon: MessageSquare },
+    { id: "insights", label: t("chat.tabs.insights"), icon: Lightbulb },
+    { id: "notes", label: t("chat.tabs.summary"), icon: FileText },
   ];
 
   return (
-    <div className={cn("flex flex-col h-full bg-background", className)}>
+    <div className={cn("flex flex-col h-full bg-background", className)} dir={isRTL ? "rtl" : "ltr"}>
       {/* Tabs */}
       <div className="flex border-b border-border bg-card px-2">
         {tabs.map((tab) => (
@@ -148,10 +152,10 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                   <div className="text-center py-8">
                     <Scale className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
-                      اسأل عن {lawTitle || "هذا القانون"}
+                      {t("chat.examples.askAbout", { lawTitle: lawTitle || t("chat.examples.defaultLaw") })}
                     </p>
                     <p className="text-sm text-muted-foreground mt-2 mb-4">
-                      أمثلة على الأسئلة:
+                      {t("chat.examples.title")}
                     </p>
                     <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto">
                       {(lawSlug === "labor-law" ? [
@@ -218,7 +222,7 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                       <ThinkingIndicator className="scale-75" />
                     </div>
                     <span className="text-sm text-muted-foreground animate-pulse">
-                      جاري تحليل المستند...
+                      {t("chat.thinking")}
                     </span>
                   </div>
                 )}
@@ -238,7 +242,7 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                           handleSend();
                         }
                       }}
-                      placeholder="Ask about this law..."
+                      placeholder={t("chat.inputPlaceholder")}
                       rows={1}
                       disabled={chatMutation.isPending}
                       className="w-full resize-none rounded-xl border border-input bg-background px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
@@ -271,13 +275,13 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   <span className="ml-2 text-muted-foreground">
-                    جاري تحليل البنود...
+                    {t("chat.analysis.loading")}
                   </span>
                 </div>
               ) : clausesData?.analysis ? (
                 <div className="space-y-3">
-                  <h3 className="font-serif text-lg text-foreground text-right">
-                    تحليل البنود القانونية
+                  <h3 className={`font-serif text-lg text-foreground ${isRTL ? "text-right" : "text-left"}`}>
+                    {t("chat.analysis.title")}
                   </h3>
                   <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
                     <div className="prose-legal text-sm" dir="rtl">
@@ -289,10 +293,10 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                 <div className="text-center py-8">
                   <Lightbulb className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground mb-4">
-                    No insights generated yet
+                    {t("chat.analysis.empty")}
                   </p>
                   <Button onClick={() => refetchClauses()} variant="outline">
-                    تحليل البنود
+                    {t("chat.analysis.generate")}
                   </Button>
                 </div>
               )}
@@ -311,13 +315,13 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   <span className="ml-2 text-muted-foreground">
-                    جاري تلخيص القانون...
+                    {t("chat.summarization.loading")}
                   </span>
                 </div>
               ) : summaryData?.summary ? (
                 <div className="space-y-3">
-                  <h3 className="font-serif text-lg text-foreground text-right">
-                    ملخص القانون
+                  <h3 className={`font-serif text-lg text-foreground ${isRTL ? "text-right" : "text-left"}`}>
+                    {t("chat.summarization.title")}
                   </h3>
                   <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
                     <div className="prose-legal text-sm" dir="rtl">
@@ -329,10 +333,10 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                 <div className="text-center py-8">
                   <FileText className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground mb-4">
-                    No summary generated yet
+                    {t("chat.summarization.empty")}
                   </p>
                   <Button onClick={() => refetchSummary()} variant="outline">
-                    تلخيص القانون
+                    {t("chat.summarization.generate")}
                   </Button>
                 </div>
               )}
