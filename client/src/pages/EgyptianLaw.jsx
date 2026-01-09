@@ -1,26 +1,61 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Scale, FileText } from "lucide-react";
+import { Scale, FileText, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { LawCard } from "@/components/egyptian-law/LawCard";
 import { EGYPTIAN_LAW_DOCUMENTS } from "@/data/egyptianLawDocuments";
+import { lawService } from "@/services/law.service";
 
 export default function EgyptianLaw() {
   const navigate = useNavigate();
+  const [readyLaws, setReadyLaws] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLaws = async () => {
+      try {
+        const data = await lawService.list();
+        // Handle both array response and paginated response
+        const laws = Array.isArray(data) ? data : data.results || data;
+        setReadyLaws(laws.map(law => law.slug));
+      } catch (error) {
+        console.error("Failed to fetch laws:", error);
+        // Continue with static data even if API fails
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLaws();
+  }, []);
 
   const handleDocumentClick = (document) => {
-    navigate(`/egyptian-law/${document.id}`);
+    // Only navigate if the law is ready
+    if (readyLaws.includes(document.id)) {
+      navigate(`/egyptian-law/${document.id}`);
+    }
   };
+
+  // Merge static data with backend status
+  const documentsWithStatus = EGYPTIAN_LAW_DOCUMENTS.map(doc => ({
+    ...doc,
+    isReady: readyLaws.includes(doc.id),
+  }));
 
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-background">
         <Header />
-        <DocumentGrid
-          documents={EGYPTIAN_LAW_DOCUMENTS}
-          onDocumentClick={handleDocumentClick}
-        />
+        {loading ? (
+          <LoadingState />
+        ) : (
+          <DocumentGrid
+            documents={documentsWithStatus}
+            onDocumentClick={handleDocumentClick}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
@@ -28,7 +63,7 @@ export default function EgyptianLaw() {
 
 function Header() {
   const { t } = useTranslation();
-  
+
   return (
     <div className="border-b border-border bg-card/50">
       <div className="max-w-7xl mx-auto px-6 py-8">
@@ -60,6 +95,14 @@ function Header() {
   );
 }
 
+function LoadingState() {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="h-8 w-8 animate-spin text-accent" />
+    </div>
+  );
+}
+
 function DocumentGrid({ documents, onDocumentClick }) {
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
@@ -70,6 +113,7 @@ function DocumentGrid({ documents, onDocumentClick }) {
             document={doc}
             index={index}
             onClick={() => onDocumentClick(doc)}
+            isReady={doc.isReady}
           />
         ))}
       </div>
@@ -81,7 +125,7 @@ function DocumentGrid({ documents, onDocumentClick }) {
 
 function InfoSection() {
   const { t } = useTranslation();
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
