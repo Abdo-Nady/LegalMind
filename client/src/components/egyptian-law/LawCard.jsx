@@ -15,20 +15,18 @@ export function LawCard({ document, index, onClick, isReady = true }) {
       className={`group ${isReady ? "cursor-pointer" : "cursor-not-allowed"}`}
     >
       <div
-        className={`relative bg-card rounded-2xl border border-border overflow-hidden transition-all duration-300 ${
-          isReady
+        className={`relative bg-card rounded-2xl border border-border overflow-hidden transition-all duration-300 ${isReady
             ? "hover:shadow-xl hover:-translate-y-1 hover:border-accent/50"
             : "opacity-75"
-        }`}
+          }`}
       >
         {/* Image Header */}
         <div className="relative h-64 overflow-hidden bg-muted">
           <img
             src={document.image}
             alt={document.title}
-            className={`w-full h-full object-cover transition-transform duration-500 ${
-              isReady ? "group-hover:scale-105" : "grayscale"
-            }`}
+            className={`w-full h-full object-cover transition-transform duration-500 ${isReady ? "group-hover:scale-105" : "grayscale"
+              }`}
           />
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -59,7 +57,7 @@ export function LawCard({ document, index, onClick, isReady = true }) {
           {/* Title on Image */}
           <div className="absolute bottom-3 left-4 right-4">
             <h3 className="font-serif text-xl text-white drop-shadow-lg">
-              {t(`egyptianLaw.documents.${document.id}.title`)}
+              {t(`egyptianLaw.documents.${document.id}.title`, document.title)}
             </h3>
           </div>
         </div>
@@ -67,16 +65,15 @@ export function LawCard({ document, index, onClick, isReady = true }) {
         {/* Content */}
         <div className="p-5">
           <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-            {t(`egyptianLaw.documents.${document.id}.description`)}
+            {t(`egyptianLaw.documents.${document.id}.description`, document.description)}
           </p>
 
           {/* Action Hint */}
           <div
-            className={`flex items-center gap-2 text-sm ${
-              isReady
+            className={`flex items-center gap-2 text-sm ${isReady
                 ? "text-accent opacity-0 group-hover:opacity-100"
                 : "text-muted-foreground"
-            } transition-opacity`}
+              } transition-opacity`}
           >
             {isReady ? (
               <>

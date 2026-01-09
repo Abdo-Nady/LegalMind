@@ -213,12 +213,12 @@ export function LawChatPanel({ lawSlug, lawTitle, onCitationClick, className }) 
                   />
                 ))}
                 {chatMutation.isPending && (
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-                      <ThinkingIndicator />
+                  <div className="flex items-center gap-3 dir-rtl">
+                    <div className="h-8 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <ThinkingIndicator className="scale-75" />
                     </div>
-                    <span className="text-sm text-muted-foreground">
-                      Analyzing law document...
+                    <span className="text-sm text-muted-foreground animate-pulse">
+                      جاري تحليل المستند...
                     </span>
                   </div>
                 )}
