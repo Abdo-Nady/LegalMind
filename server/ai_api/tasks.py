@@ -6,7 +6,7 @@ Tasks:
 """
 from celery import shared_task
 from django.utils import timezone
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyMuPDFLoader, PyPDFLoader
 
 from .models import Document, DocumentChunk
 from .langchain_config import (
@@ -39,9 +39,25 @@ def process_pdf_document(self, document_id):
         doc.status = 'processing'
         doc.save(update_fields=['status'])
 
-        # Load PDF
-        loader = PyPDFLoader(doc.file.path)
-        pages = loader.load()
+        # Load PDF with fallback mechanism
+        # Try PyMuPDFLoader first (more robust), fallback to PyPDFLoader
+        try:
+            loader = PyMuPDFLoader(doc.file.path)
+            pages = loader.load()
+        except Exception as e:
+            # Fallback to PyPDFLoader if PyMuPDF fails
+            print(f"PyMuPDFLoader failed, trying PyPDFLoader: {e}")
+            try:
+                loader = PyPDFLoader(doc.file.path)
+                pages = loader.load()
+            except KeyError as ke:
+                # If we get KeyError (bbox issue), try with extraction mode
+                if 'bbox' in str(ke):
+                    raise Exception(
+                        "PDF parsing failed. The PDF might have corrupted fonts or non-standard formatting. "
+                        "Please try re-saving the PDF or converting it to a standard format."
+                    ) from ke
+                raise
 
         # Update page count
         doc.page_count = len(pages)
