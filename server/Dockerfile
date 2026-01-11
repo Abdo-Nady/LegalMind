@@ -27,13 +27,14 @@ RUN pip install --upgrade pip && \
 # Copy project files
 COPY . .
 
-# Create media directory
-RUN mkdir -p media
+# Create necessary directories
+RUN mkdir -p media egyptian_laws/pdfs
+
+# Make entrypoint script executable
+RUN chmod +x docker-entrypoint.sh
 
 # Expose port
 EXPOSE 8000
 
-# Run migrations and start server
-CMD python manage.py migrate && \
-    python manage.py collectstatic --noinput && \
-    python manage.py runserver 0.0.0.0:8000
+# Use entrypoint script for startup
+ENTRYPOINT ["./docker-entrypoint.sh"]

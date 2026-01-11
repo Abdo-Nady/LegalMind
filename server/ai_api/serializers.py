@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import Document, DocumentChunk, ChatSession, ChatMessage
+from .models import (
+    Document, DocumentChunk, ChatSession, ChatMessage,
+    EgyptianLaw, EgyptianLawChunk, LawChatSession, LawChatMessage
+)
 
 
 class DocumentChunkSerializer(serializers.ModelSerializer):
@@ -127,3 +130,81 @@ class DocumentSummarySerializer(serializers.Serializer):
         child=serializers.DictField(),
         required=False
     )
+
+
+# Egyptian Law Serializers
+
+class EgyptianLawSerializer(serializers.ModelSerializer):
+    """Full serializer for Egyptian law documents."""
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EgyptianLaw
+        fields = [
+            'slug', 'title_en', 'title_ar',
+            'description_en', 'description_ar',
+            'status', 'page_count', 'chunk_count',
+            'file_url', 'seeded_at'
+        ]
+
+    def get_file_url(self, obj):
+        """Return URL to the PDF file."""
+        request = self.context.get('request')
+        if request and obj.status == 'ready':
+            return request.build_absolute_uri(
+                f'/law-pdfs/{obj.file_path}'
+            )
+        return None
+
+
+class EgyptianLawListSerializer(serializers.ModelSerializer):
+    """Lighter serializer for listing Egyptian laws."""
+
+    class Meta:
+        model = EgyptianLaw
+        fields = [
+            'slug', 'title_en', 'title_ar',
+            'description_en', 'description_ar',
+            'status', 'page_count'
+        ]
+
+
+class LawChatMessageSerializer(serializers.ModelSerializer):
+    """Serializer for law chat messages."""
+
+    class Meta:
+        model = LawChatMessage
+        fields = ['id', 'role', 'content', 'sources', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class LawChatSessionSerializer(serializers.ModelSerializer):
+    """Serializer for law chat sessions with message history."""
+    messages = LawChatMessageSerializer(many=True, read_only=True)
+    law_title = serializers.CharField(source='law.title_en', read_only=True)
+    law_slug = serializers.CharField(source='law.slug', read_only=True)
+
+    class Meta:
+        model = LawChatSession
+        fields = [
+            'id', 'law_slug', 'law_title', 'title',
+            'created_at', 'updated_at', 'messages'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class LawChatSessionListSerializer(serializers.ModelSerializer):
+    """Lighter serializer for listing law chat sessions."""
+    law_title = serializers.CharField(source='law.title_en', read_only=True)
+    law_slug = serializers.CharField(source='law.slug', read_only=True)
+    message_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LawChatSession
+        fields = [
+            'id', 'law_slug', 'law_title', 'title',
+            'message_count', 'created_at', 'updated_at'
+        ]
+
+    def get_message_count(self, obj):
+        return obj.messages.count()
