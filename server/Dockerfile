@@ -30,8 +30,10 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p media egyptian_laws/pdfs
 
-# Make entrypoint script executable
-RUN chmod +x docker-entrypoint.sh
+# Fix line endings and make entrypoint script executable
+# This handles cases where the script was edited on Windows (CRLF -> LF)
+RUN sed -i 's/\r$//' docker-entrypoint.sh && \
+    chmod +x docker-entrypoint.sh
 
 # Expose port
 EXPOSE 8000

@@ -2,6 +2,7 @@
 Management command to seed Egyptian law documents and generate embeddings.
 Run on container startup to ensure laws are always available.
 """
+
 import unicodedata
 import re
 
@@ -20,16 +21,17 @@ def normalize_arabic(text: str) -> str:
     3. Normalizing whitespace
     """
     # NFKC normalization converts presentation forms to standard Arabic
-    text = unicodedata.normalize('NFKC', text)
-    
+    text = unicodedata.normalize("NFKC", text)
+
     # Remove Arabic diacritics (tashkeel) - helps matching
-    arabic_diacritics = re.compile(r'[\u064B-\u065F\u0670]')
-    text = arabic_diacritics.sub('', text)
-    
+    arabic_diacritics = re.compile(r"[\u064B-\u065F\u0670]")
+    text = arabic_diacritics.sub("", text)
+
     # Normalize whitespace
-    text = ' '.join(text.split())
-    
+    text = " ".join(text.split())
+
     return text
+
 
 from ai_api.models import EgyptianLaw, EgyptianLawChunk
 from ai_api.langchain_config import (
@@ -95,27 +97,27 @@ EGYPTIAN_LAWS = [
 
 
 class Command(BaseCommand):
-    help = 'Seed Egyptian law documents and generate embeddings (idempotent)'
+    help = "Seed Egyptian law documents and generate embeddings (idempotent)"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--force',
-            action='store_true',
-            help='Force re-seeding even if already done',
+            "--force",
+            action="store_true",
+            help="Force re-seeding even if already done",
         )
         parser.add_argument(
-            '--law',
+            "--law",
             type=str,
-            help='Seed only a specific law by slug',
+            help="Seed only a specific law by slug",
         )
 
     def handle(self, *args, **options):
-        force = options.get('force', False)
-        specific_law = options.get('law')
+        force = options.get("force", False)
+        specific_law = options.get("law")
 
         laws_to_process = EGYPTIAN_LAWS
         if specific_law:
-            laws_to_process = [l for l in EGYPTIAN_LAWS if l['slug'] == specific_law]
+            laws_to_process = [l for l in EGYPTIAN_LAWS if l["slug"] == specific_law]
             if not laws_to_process:
                 self.stderr.write(
                     self.style.ERROR(f"Law '{specific_law}' not found in configuration")
@@ -131,47 +133,58 @@ class Command(BaseCommand):
 
     def seed_law(self, law_data: dict, force: bool):
         """Seed a single law document."""
-        slug = law_data['slug']
+        slug = law_data["slug"]
 
         # Check if already seeded
         law, created = EgyptianLaw.objects.get_or_create(
             slug=slug,
             defaults={
-                'title_en': law_data['title_en'],
-                'title_ar': law_data['title_ar'],
-                'description_en': law_data['description_en'],
-                'description_ar': law_data['description_ar'],
-                'file_path': law_data['file_name'],
-                'status': 'pending',
-            }
+                "title_en": law_data["title_en"],
+                "title_ar": law_data["title_ar"],
+                "description_en": law_data["description_en"],
+                "description_ar": law_data["description_ar"],
+                "file_path": law_data["file_name"],
+                "status": "pending",
+            },
         )
 
-        # Skip if already ready (unless force)
-        if not created and law.status == 'ready' and not force:
-            self.stdout.write(f"  Skipping {slug} - already seeded")
-            return
+        # 2. Verify actual data presence to solve the 'False Ready Flag' issue
+        # We check if chunks actually exist in the database for this law
+        actual_chunks_exist = EgyptianLawChunk.objects.filter(law=law).exists()
 
-        # Update metadata if re-seeding
+        # Skip only if status is 'ready' AND data actually exists
+        if not created and not force:
+            if law.status == "ready" and actual_chunks_exist:
+                self.stdout.write(f"  Skipping {slug} - already seeded and verified")
+                return
+
+            # Recovery case: status is 'ready' but data is missing (failed previous run)
+            if law.status == "ready" and not actual_chunks_exist:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"  Fixing {slug}: Status was 'ready' but no data found. Re-processing..."
+                    )
+                )
+
+        # Update metadata to ensure sync with EGYPTIAN_LAWS config
         if not created:
-            law.title_en = law_data['title_en']
-            law.title_ar = law_data['title_ar']
-            law.description_en = law_data['description_en']
-            law.description_ar = law_data['description_ar']
-            law.file_path = law_data['file_name']
+            law.title_en = law_data["title_en"]
+            law.title_ar = law_data["title_ar"]
+            law.description_en = law_data["description_en"]
+            law.description_ar = law_data["description_ar"]
+            law.file_path = law_data["file_name"]
 
         self.stdout.write(f"  Processing {slug}...")
 
         try:
-            law.status = 'processing'
+            law.status = "processing"
             law.save()
 
             # Get PDF path
-            pdf_path = settings.EGYPTIAN_LAWS_DIR / law_data['file_name']
+            pdf_path = settings.EGYPTIAN_LAWS_DIR / law_data["file_name"]
             if not pdf_path.exists():
-                self.stderr.write(
-                    self.style.ERROR(f"    PDF not found: {pdf_path}")
-                )
-                law.status = 'failed'
+                self.stderr.write(self.style.ERROR(f"    PDF not found: {pdf_path}"))
+                law.status = "failed"
                 law.save()
                 return
 
@@ -182,7 +195,7 @@ class Command(BaseCommand):
 
             # Sanitize and normalize Arabic content
             for page in pages:
-                content = page.page_content.replace('\x00', '')
+                content = page.page_content.replace("\x00", "")
                 page.page_content = normalize_arabic(content)
 
             law.page_count = len(pages)
@@ -193,29 +206,41 @@ class Command(BaseCommand):
             chunks = text_splitter.split_documents(pages)
             self.stdout.write(f"    Split into {len(chunks)} chunks")
 
-            # Delete old chunks and vectors if re-seeding
-            if not created or force:
+            # 3. Clean old data before re-processing to prevent duplicates
+            if actual_chunks_exist or force:
+                self.stdout.write(
+                    f"    Cleaning existing data for {slug} before re-processing..."
+                )
                 EgyptianLawChunk.objects.filter(law=law).delete()
-                delete_law_vectors(slug)
+                try:
+                    delete_law_vectors(slug)
+                except Exception:
+                    pass  # Ignore if vector store doesn't exist yet
 
             # Add metadata and save chunks
             chunk_objects = []
             for i, chunk in enumerate(chunks):
-                chunk.page_content = normalize_arabic(chunk.page_content.replace('\x00', ''))
-                page_num = chunk.metadata.get('page', 0) + 1
-                chunk.metadata.update({
-                    "law_slug": slug,
-                    "law_title": law.title_en,
-                    "chunk_index": i,
-                    "page_number": page_num,
-                })
+                chunk.page_content = normalize_arabic(
+                    chunk.page_content.replace("\x00", "")
+                )
+                page_num = chunk.metadata.get("page", 0) + 1
+                chunk.metadata.update(
+                    {
+                        "law_slug": slug,
+                        "law_title": law.title_en,
+                        "chunk_index": i,
+                        "page_number": page_num,
+                    }
+                )
 
-                chunk_objects.append(EgyptianLawChunk(
-                    law=law,
-                    content=chunk.page_content,
-                    chunk_index=i,
-                    page_number=page_num,
-                ))
+                chunk_objects.append(
+                    EgyptianLawChunk(
+                        law=law,
+                        content=chunk.page_content,
+                        chunk_index=i,
+                        page_number=page_num,
+                    )
+                )
 
             EgyptianLawChunk.objects.bulk_create(chunk_objects)
 
@@ -225,7 +250,7 @@ class Command(BaseCommand):
             vector_store.add_documents(chunks)
 
             # Mark as ready
-            law.status = 'ready'
+            law.status = "ready"
             law.chunk_count = len(chunks)
             law.seeded_at = timezone.now()
             law.save()
@@ -237,10 +262,9 @@ class Command(BaseCommand):
             )
 
         except Exception as e:
-            law.status = 'failed'
+            law.status = "failed"
             law.save()
-            self.stderr.write(
-                self.style.ERROR(f"    Failed to seed {slug}: {str(e)}")
-            )
+            self.stderr.write(self.style.ERROR(f"    Failed to seed {slug}: {str(e)}"))
             import traceback
+
             self.stderr.write(traceback.format_exc())
