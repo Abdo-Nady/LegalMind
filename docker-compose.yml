@@ -35,6 +35,9 @@ services:
       - ./server/.env
     ports:
       - "8000:8000"
+    volumes:
+      - shared_data:/app/data
+      - shared_media:/app/media
     depends_on:
       - db
       - redis
@@ -49,6 +52,9 @@ services:
     command: celery -A config worker --loglevel=info
     env_file:
       - ./server/.env
+    volumes:
+      - shared_data:/app/data
+      - shared_media:/app/media
     depends_on:
       - db
       - redis
@@ -70,3 +76,5 @@ services:
 
 volumes:
   postgres_data:
+  shared_data:
+  shared_media:
