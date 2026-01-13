@@ -29,19 +29,9 @@ RETRIEVAL_K = 15  # Increased for better coverage
 def get_connection_string() -> str:
     """
     Build PostgreSQL connection string from Django settings.
-    Supports both SQLite (for dev) and PostgreSQL (for production).
+    Uses the same database configured for Django ORM.
     """
     db = settings.DATABASES['default']
-    engine = db.get('ENGINE', '')
-
-    # For SQLite, we'll use a local PostgreSQL or fall back
-    if 'sqlite' in engine:
-        # Check for explicit PG connection string in environment
-        pg_url = os.environ.get('PGVECTOR_CONNECTION_STRING')
-        if pg_url:
-            return pg_url
-        # Default local PostgreSQL for development
-        return "postgresql+psycopg://postgres:postgres@localhost:5432/documind"
 
     # PostgreSQL connection
     user = db.get('USER', 'postgres')
