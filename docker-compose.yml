@@ -33,8 +33,6 @@ services:
     restart: unless-stopped
     env_file:
       - ./server/.env
-    volumes:
-      - ./server:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -51,8 +49,6 @@ services:
     command: celery -A config worker --loglevel=info
     env_file:
       - ./server/.env
-    volumes:
-      - ./server:/app
     depends_on:
       - db
       - redis
@@ -67,9 +63,6 @@ services:
     restart: unless-stopped
     env_file:
       - ./client/.env
-    volumes:
-      - ./client:/app
-      - /app/node_modules
     ports:
       - "5173:5173"
     depends_on:

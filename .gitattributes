@@ -1,10 +1,14 @@
 # Ensure shell scripts always use LF line endings
 *.sh text eol=lf
 
-# Ensure Python files use LF
-*.py text eol=lf
+# Ensure Docker entrypoint scripts use LF
+**/docker-entrypoint.sh text eol=lf
+**/entrypoint.sh text eol=lf
 
-# Ensure Docker-related files use LF
+# Auto detect text files and normalize line endings to LF on checkin
+* text=auto
+
+# Explicitly set line endings for these files
 Dockerfile text eol=lf
-docker-compose*.yml text eol=lf
-.dockerignore text eol=lf
+docker-compose.yml text eol=lf
+.env.example text eol=lf
