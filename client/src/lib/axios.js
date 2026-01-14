@@ -12,6 +12,7 @@ const axiosInstance = axios.create({
 });
 
 // Token management helpers
+// Tokens live in localStorage for simplicity; consider httpOnly cookies for production.
 const getTokens = () => {
     return {
         accessToken: localStorage.getItem('access_token'),

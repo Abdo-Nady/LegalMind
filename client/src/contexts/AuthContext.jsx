@@ -20,6 +20,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
     const queryClient = useQueryClient();
+    // Persist guest mode across refresh to keep routing consistent.
     const [isGuest, setIsGuest] = useState(() => {
         return localStorage.getItem('isGuest') === 'true';
     });

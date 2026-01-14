@@ -29,6 +29,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 EGYPTIAN_LAWS_DIR = BASE_DIR / "egyptian_laws" / "pdfs"
 
 # Redis Cache Configuration for Rate Limiting
+# Redis DB 1 is reserved for throttling to avoid contention with Celery (DB 0).
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
@@ -249,6 +250,8 @@ SOCIALACCOUNT_PROVIDERS = {
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
+# NOTE: The primary Django DB defaults to SQLite for local simplicity.
+# Embeddings live in Postgres via PGVector (see ai_api/langchain_config.py).
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",

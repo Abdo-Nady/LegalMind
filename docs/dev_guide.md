@@ -1,130 +1,68 @@
-# DocuMind Developer Guide
+﻿# DocuMind Developer Guide
 
-Quick setup guide for new developers.
-
----
+This is a quickstart for local development. For deeper context, see:
+- `docs/ARCHITECTURE.md`
+- `docs/MAINTENANCE.md`
 
 ## Prerequisites
 
-- Python 3.12+
+- Python 3.11+
 - Node.js 20+
-- PostgreSQL (or use SQLite for local dev)
-- Redis (for WebSocket/chat features)
+- Redis
+- PostgreSQL with pgvector
+- Docker and Docker Compose (recommended)
 
----
+## Environment setup
 
-## Backend Setup
+```
+cp server/.env.example server/.env
+cp client/.env.example client/.env
+```
 
-```bash
+Populate `OPENAI_API_KEY` and other required values in `server/.env`.
+
+## Run with Docker
+
+```
+docker-compose up -d --build
+```
+
+URLs:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8000
+- Swagger: http://localhost:8000/swagger/
+
+## Run without Docker
+
+Backend:
+```
 cd server
-
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
+python -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
-
-# Run migrations
 python manage.py migrate
-
-# Create superuser (optional)
-python manage.py createsuperuser
-
-# Start server
 python manage.py runserver
 ```
 
-**API:** http://localhost:8000  
-**Admin:** http://localhost:8000/admin
+Celery worker:
+```
+cd server
+venv\Scripts\activate
+celery -A config worker --loglevel=info
+```
 
----
-
-## Frontend Setup
-
-```bash
+Frontend:
+```
 cd client
-
-# Install dependencies
 npm install
-
-# Start dev server
 npm run dev
 ```
 
-**App:** http://localhost:5173
+## Common commands
 
----
-
-## Creating a New App (Backend)
-
-```bash
-cd server
-source venv/bin/activate
-
-# Create app
-python manage.py startapp <app_name>
-```
-
-Then in `config/settings.py`:
-```python
-INSTALLED_APPS = [
-    ...
-    '<app_name>',
-]
-```
-
----
-
-## Project Structure
-
-```
-DocuMind/
-├── client/          # React frontend (Vite)
-│   ├── src/
-│   └── package.json
-├── server/          # Django backend
-│   ├── config/      # Project settings
-│   ├── manage.py
-│   └── requirements.txt
-├── docs/            # Documentation
-└── docker-compose.yml
-```
-
----
-
-## Useful Commands
-
-| Task | Command |
-|------|---------|
-| Run backend | `python manage.py runserver` |
-| Run frontend | `npm run dev` |
-| Make migrations | `python manage.py makemigrations` |
-| Apply migrations | `python manage.py migrate` |
-| Create app | `python manage.py startapp <name>` |
-| Install Python pkg | `pip install <pkg> && pip freeze > requirements.txt` |
-| Install Node pkg | `npm install <pkg>` |
-
----
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and configure:
-
-```
-SECRET_KEY=your-secret-key
-DEBUG=True
-DB_NAME=documind
-DB_USER=postgres
-DB_PASSWORD=postgres
-```
-
----
-
-## Git Workflow
-
-1. Create feature branch: `git checkout -b feature/<name>`
-2. Make changes
-3. Commit: `git commit -m "Add feature"`
-4. Push: `git push origin feature/<name>`
-5. Open Pull Request
+- `python manage.py makemigrations`
+- `python manage.py migrate`
+- `python manage.py createsuperuser`
+- `python manage.py seed_egyptian_laws --force`
+- `docker-compose logs -f`
+- `docker-compose down -v`

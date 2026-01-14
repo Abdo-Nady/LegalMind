@@ -389,7 +389,51 @@
     },
     "billing": {
       "title": "Billing & Subscription",
-      "subtitle": "Manage your billing information and subscription"
+      "subtitle": "Manage your billing information and subscription",
+      "perMonth": "/month",
+      "subscribeCta": "Subscription",
+      "plans": {
+        "basic": {
+          "name": "Basic",
+          "tagline": "For individuals",
+          "price": "EGP 199",
+          "description": "Starter access for light document review",
+          "features": {
+            "documents": "20 documents per month",
+            "pages": "Up to 200 pages per document",
+            "clauses": "Core clause detection & summaries",
+            "citations": "Cited answers with PDF highlights",
+            "support": "Standard email support"
+          }
+        },
+        "professional": {
+          "name": "Professional",
+          "tagline": "For growing teams",
+          "badge": "Most Popular",
+          "price": "EGP 499",
+          "description": "Best balance for daily legal work",
+          "features": {
+            "documents": "Unlimited documents",
+            "analysis": "Multi-document comparison & search",
+            "redrafting": "Risk scoring and clause redrafting",
+            "exports": "Export summaries to PDF/Text",
+            "support": "Priority email support"
+          }
+        },
+        "premium": {
+          "name": "Premium",
+          "tagline": "For legal departments",
+          "price": "EGP 899",
+          "description": "Advanced controls and collaboration",
+          "features": {
+            "teams": "Team workspace up to 5 seats",
+            "templates": "Custom clause templates",
+            "compliance": "Advanced compliance checklist",
+            "governance": "Audit-ready activity logs",
+            "support": "Dedicated onboarding & SLA"
+          }
+        }
+      }
     },
     "security": {
       "title": "Security Settings",

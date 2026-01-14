@@ -1,3 +1,4 @@
+// Keep this list aligned with server/ai_api/management/commands/seed_egyptian_laws.py.
 export const EGYPTIAN_LAW_DOCUMENTS = [
   {
     id: 'constitution',

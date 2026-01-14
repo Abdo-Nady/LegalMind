@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { User, Bell, Shield, CreditCard, Palette, HelpCircle, Eye, EyeOff, Trash2 } from "lucide-react";
+import { User, Bell, Shield, CreditCard, Palette, HelpCircle, Eye, EyeOff, Trash2, Check } from "lucide-react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -285,6 +285,63 @@ export default function Settings() {
     alert(JSON.stringify(exportData, null, 2));
   };
 
+  const paypalUrl = "https://www.paypal.com/webapps/hermes?token=21239971ED531250A&useraction=commit&wpsFlowRedirectToXorouterSkipHermesStartTime=1768430600230&flowType=WPS&mfid=1768430599984_f75000725af4a";
+  const billingPlans = [
+    {
+      id: "basic",
+      name: t("settings.billing.plans.basic.name"),
+      tagline: t("settings.billing.plans.basic.tagline"),
+      price: t("settings.billing.plans.basic.price"),
+      description: t("settings.billing.plans.basic.description"),
+      features: [
+        t("settings.billing.plans.basic.features.documents"),
+        t("settings.billing.plans.basic.features.pages"),
+        t("settings.billing.plans.basic.features.clauses"),
+        t("settings.billing.plans.basic.features.citations"),
+        t("settings.billing.plans.basic.features.support"),
+      ],
+      borderClass: "border-t-success",
+      titleClass: "text-success",
+      buttonClass: "bg-success text-success-foreground hover:bg-success/90",
+    },
+    {
+      id: "professional",
+      name: t("settings.billing.plans.professional.name"),
+      tagline: t("settings.billing.plans.professional.tagline"),
+      badge: t("settings.billing.plans.professional.badge"),
+      price: t("settings.billing.plans.professional.price"),
+      description: t("settings.billing.plans.professional.description"),
+      features: [
+        t("settings.billing.plans.professional.features.documents"),
+        t("settings.billing.plans.professional.features.analysis"),
+        t("settings.billing.plans.professional.features.redrafting"),
+        t("settings.billing.plans.professional.features.exports"),
+        t("settings.billing.plans.professional.features.support"),
+      ],
+      borderClass: "border-t-primary",
+      titleClass: "text-primary",
+      buttonClass: "bg-primary text-primary-foreground hover:bg-primary/90",
+      highlight: true,
+    },
+    {
+      id: "premium",
+      name: t("settings.billing.plans.premium.name"),
+      tagline: t("settings.billing.plans.premium.tagline"),
+      price: t("settings.billing.plans.premium.price"),
+      description: t("settings.billing.plans.premium.description"),
+      features: [
+        t("settings.billing.plans.premium.features.teams"),
+        t("settings.billing.plans.premium.features.templates"),
+        t("settings.billing.plans.premium.features.compliance"),
+        t("settings.billing.plans.premium.features.governance"),
+        t("settings.billing.plans.premium.features.support"),
+      ],
+      borderClass: "border-t-warning",
+      titleClass: "text-warning",
+      buttonClass: "bg-warning text-warning-foreground hover:bg-warning/90",
+    },
+  ];
+
   return (
     <DashboardLayout>
       <div className="p-8">
@@ -535,6 +592,61 @@ export default function Settings() {
               </Card>
             )}
 
+            {activeSection === "billing" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t("settings.billing.title")}</CardTitle>
+                  <CardDescription>{t("settings.billing.subtitle")}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {billingPlans.map((plan) => (
+                      <div
+                        key={plan.id}
+                        className={cn(
+                          "flex h-full flex-col rounded-2xl border border-border border-t-4 bg-card/60 p-6 shadow-premium transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover",
+                          plan.borderClass,
+                          plan.highlight && "lg:scale-[1.02] bg-card"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className={cn("text-xs font-semibold uppercase tracking-[0.2em]", plan.titleClass)}>
+                              {plan.name}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">{plan.tagline}</p>
+                          </div>
+                          {plan.badge ? (
+                            <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
+                              {plan.badge}
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="mt-6 flex items-end gap-2">
+                          <span className="text-4xl font-semibold text-foreground">{plan.price}</span>
+                          <span className="text-sm text-muted-foreground">{t("settings.billing.perMonth")}</span>
+                        </div>
+                        <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
+                        <Button asChild className={cn("mt-6 w-full", plan.buttonClass)}>
+                          <a href={paypalUrl}>
+                            {t("settings.billing.subscribeCta")}
+                          </a>
+                        </Button>
+                        <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
+                          {plan.features.map((feature) => (
+                            <li key={feature} className="flex items-start gap-2 text-left">
+                              <Check className={cn("mt-0.5 h-4 w-4 shrink-0", plan.titleClass)} />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Appearance Settings Section */}
             {activeSection === "appearance" && (
               <Card>
@@ -567,7 +679,7 @@ export default function Settings() {
             )}
 
             {/* Generic Placeholder for other sections */}
-            {activeSection !== "profile" && activeSection !== "security" && activeSection !== "appearance" && (
+            {activeSection !== "profile" && activeSection !== "security" && activeSection !== "appearance" && activeSection !== "billing" && (
               <Card>
                 <CardHeader>
                   <CardTitle>

@@ -131,7 +131,7 @@ class DocumentDetailView(RetrieveDestroyAPIView):
         return Document.objects.filter(user=self.request.user)
 
     def perform_destroy(self, instance):
-        # Delete vectors from ChromaDB
+        # Delete vectors from PGVector
         delete_document_vectors(instance.id)
         # Delete the file
         if instance.file:

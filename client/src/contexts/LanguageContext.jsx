@@ -15,6 +15,7 @@ export function LanguageProvider({ children }) {
     const currentLang = i18n.language;
     const dir = currentLang === 'ar' ? 'rtl' : 'ltr';
 
+    // dir/lang plus the rtl class are consumed by global styles in index.css.
     document.documentElement.setAttribute('dir', dir);
     document.documentElement.setAttribute('lang', currentLang);
 

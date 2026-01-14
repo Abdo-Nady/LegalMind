@@ -42,6 +42,7 @@ from ai_api.langchain_config import (
 
 
 # Law definitions matching frontend egyptianLawDocuments.js
+# Keep this list, the PDF files, and the frontend metadata in sync.
 # Only laws with available PDFs are included
 EGYPTIAN_LAWS = [
     {

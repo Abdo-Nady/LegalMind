@@ -70,7 +70,7 @@ def process_pdf_document(self, document_id):
         text_splitter = get_text_splitter()
         chunks = text_splitter.split_documents(pages)
 
-        # Add metadata to chunks and save to database
+        # Persist chunks in the DB for citations/debugging; embeddings live in PGVector.
         chunk_objects = []
         for i, chunk in enumerate(chunks):
             # Sanitize chunk content as well

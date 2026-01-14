@@ -36,6 +36,7 @@ def get_connection_string() -> str:
 
     # For SQLite, we'll use a local PostgreSQL or fall back
     if 'sqlite' in engine:
+        # Embeddings are stored in PGVector even when Django uses SQLite.
         # Check for explicit PG connection string in environment
         pg_url = os.environ.get('PGVECTOR_CONNECTION_STRING')
         if pg_url:

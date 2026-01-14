@@ -8,7 +8,7 @@ import { documentService } from '@/services/document.service';
  * Automatically polls documents that are in "processing" state
  *
  * @param {Array} documents - Array of document objects
- * @param {number} interval - Polling interval in milliseconds (default: 3000)
+ * @param {number} interval - Polling interval in milliseconds (default: 5000)
  */
 export function useDocumentPolling(documents, interval = 5000) {
   const queryClient = useQueryClient();
@@ -32,7 +32,7 @@ export function useDocumentPolling(documents, interval = 5000) {
       return; // No documents to poll
     }
 
-    // Poll all processing documents
+    // Poll all processing documents; keep interval conservative to respect API throttling.
     const pollDocuments = async () => {
       for (const docId of processingIds) {
         try {
