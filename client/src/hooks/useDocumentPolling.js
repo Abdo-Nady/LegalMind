@@ -10,7 +10,7 @@ import { documentService } from '@/services/document.service';
  * @param {Array} documents - Array of document objects
  * @param {number} interval - Polling interval in milliseconds (default: 3000)
  */
-export function useDocumentPolling(documents, interval = 3000) {
+export function useDocumentPolling(documents, interval = 5000) {
   const queryClient = useQueryClient();
   const intervalRef = useRef(null);
 

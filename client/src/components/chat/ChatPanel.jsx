@@ -153,10 +153,10 @@ export function ChatPanel({ documentId, onCitationClick, className }) {
                 ))}
                 {chatMutation.isPending && (
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-                      <ThinkingIndicator />
+                    <div className="h-8 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <ThinkingIndicator className="scale-75" />
                     </div>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm text-muted-foreground animate-pulse">
                       Analyzing document...
                     </span>
                   </div>

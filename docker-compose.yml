@@ -33,10 +33,11 @@ services:
     restart: unless-stopped
     env_file:
       - ./server/.env
-    volumes:
-      - ./server:/app
     ports:
       - "8000:8000"
+    volumes:
+      - shared_data:/app/data
+      - shared_media:/app/media
     depends_on:
       - db
       - redis
@@ -52,7 +53,8 @@ services:
     env_file:
       - ./server/.env
     volumes:
-      - ./server:/app
+      - shared_data:/app/data
+      - shared_media:/app/media
     depends_on:
       - db
       - redis
@@ -67,9 +69,6 @@ services:
     restart: unless-stopped
     env_file:
       - ./client/.env
-    volumes:
-      - ./client:/app
-      - /app/node_modules
     ports:
       - "5173:5173"
     depends_on:
@@ -77,3 +76,5 @@ services:
 
 volumes:
   postgres_data:
+  shared_data:
+  shared_media:

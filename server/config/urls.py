@@ -49,3 +49,5 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # Serve Egyptian Law PDFs
+    urlpatterns += static('/law-pdfs/', document_root=settings.EGYPTIAN_LAWS_DIR)

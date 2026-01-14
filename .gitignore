@@ -17,6 +17,7 @@ env/
 local_settings.py
 db.sqlite3
 media/
+staticfiles/
 
 # Node / React
 node_modules/
@@ -59,3 +60,6 @@ stress_test.sh
 
 # temporary files
 temp/
+
+# Generated font files
+client/src/lib/fonts/amiri-regular.js

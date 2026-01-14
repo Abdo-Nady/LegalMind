@@ -120,3 +120,115 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"{self.role}: {self.content[:50]}..."
+
+
+class EgyptianLaw(models.Model):
+    """
+    Pre-seeded Egyptian law documents.
+    These are system-wide, not tied to individual users.
+    Embeddings are generated once on container startup.
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('ready', 'Ready'),
+        ('failed', 'Failed'),
+    ]
+
+    slug = models.SlugField(max_length=50, unique=True, primary_key=True)
+    title_en = models.CharField(max_length=255)
+    title_ar = models.CharField(max_length=255)
+    description_en = models.TextField(blank=True)
+    description_ar = models.TextField(blank=True)
+    file_path = models.CharField(max_length=500)  # Relative path to static PDF
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    page_count = models.IntegerField(null=True, blank=True)
+    chunk_count = models.IntegerField(null=True, blank=True)
+    seeded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Egyptian Law"
+        verbose_name_plural = "Egyptian Laws"
+        ordering = ['title_en']
+
+    def __str__(self):
+        return f"{self.title_en} ({self.slug})"
+
+    @property
+    def collection_name(self):
+        """Vector store collection name for this law."""
+        return f"law_{self.slug}"
+
+
+class EgyptianLawChunk(models.Model):
+    """
+    Text chunks for Egyptian law documents.
+    Used for citation tracking and debugging.
+    """
+    law = models.ForeignKey(
+        EgyptianLaw,
+        on_delete=models.CASCADE,
+        related_name='chunks'
+    )
+    content = models.TextField()
+    chunk_index = models.IntegerField()
+    page_number = models.IntegerField(null=True, blank=True)
+    vector_id = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        ordering = ['chunk_index']
+
+    def __str__(self):
+        return f"{self.law.title_en} - Chunk {self.chunk_index}"
+
+
+class LawChatSession(models.Model):
+    """
+    Chat sessions for Egyptian law documents.
+    Separate from regular ChatSession to keep user documents isolated.
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='law_chat_sessions'
+    )
+    law = models.ForeignKey(
+        EgyptianLaw,
+        on_delete=models.CASCADE,
+        related_name='chat_sessions'
+    )
+    title = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"Law Chat: {self.law.title_en} - {self.created_at}"
+
+
+class LawChatMessage(models.Model):
+    """
+    Individual messages within a law chat session.
+    """
+    ROLE_CHOICES = [
+        ('user', 'User'),
+        ('assistant', 'Assistant'),
+    ]
+
+    session = models.ForeignKey(
+        LawChatSession,
+        on_delete=models.CASCADE,
+        related_name='messages'
+    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    content = models.TextField()
+    sources = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.role}: {self.content[:50]}..."

@@ -258,6 +258,13 @@
     "processingMessage": "We're extracting text, analyzing content, and generating embeddings. This page will automatically refresh when ready.",
     "checkingStatus": "Checking status every 3 seconds...",
     "processingFailed": "Document processing failed",
+    "lawNotAvailable": {
+      "title": "Law Not Available",
+      "message": "This law document is not ready yet. Please check back later.",
+      "backToLaws": "Back to Egyptian Law"
+    },
+    "loadingLaw": "Loading law document...",
+    "failedToLoadLaw": "Failed to load law document",
     "share": "Share",
     "export": "Export",
     "exportAsPdf": "Export as PDF",
@@ -282,7 +289,30 @@
     "noSummary": "No summary generated yet",
     "generateInsights": "Generate Insights",
     "generateSummary": "Generate Summary",
-    "thinking": "Thinking..."
+    "thinking": "Thinking...",
+    "tabs": {
+      "chat": "Chat",
+      "insights": "Insights",
+      "summary": "Summary"
+    },
+    "inputPlaceholder": "Ask about this law...",
+    "examples": {
+      "title": "Example Questions:",
+      "askAbout": "Ask about {{lawTitle}}",
+      "defaultLaw": "this law"
+    },
+    "analysis": {
+      "loading": "Analyzing law provisions...",
+      "title": "Legal Provisions Analysis",
+      "empty": "No insights generated yet",
+      "generate": "Generate Insights"
+    },
+    "summarization": {
+      "loading": "Generating summary...",
+      "title": "Executive Summary",
+      "empty": "No summary generated yet",
+      "generate": "Generate Summary"
+    }
   },
   "egyptianLaw": {
     "title": "Chat with Egyptian Law",
@@ -307,10 +337,10 @@
         "titleAr": "القانون المدني",
         "description": "The foundation of private law in Egypt, covering contracts, property, obligations, and civil liability."
       },
-      "tax-law": {
-        "title": "Tax Law",
-        "titleAr": "قانون الضرائب",
-        "description": "Regulates taxation in Egypt, including income tax, corporate tax, VAT, and tax obligations for individuals and businesses."
+      "tax-procedures": {
+        "title": "Unified Tax Procedures Law",
+        "titleAr": "قانون الإجراءات الضريبية الموحد",
+        "description": "Regulates tax assessment, collection, and appeals procedures, as well as rights and obligations of taxpayers."
       },
       "penal-code": {
         "title": "Penal Code",

@@ -25,6 +25,9 @@ load_dotenv(BASE_DIR / ".env")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Egyptian Laws static documents directory
+EGYPTIAN_LAWS_DIR = BASE_DIR / "egyptian_laws" / "pdfs"
+
 # Redis Cache Configuration for Rate Limiting
 CACHES = {
     "default": {
@@ -139,15 +142,15 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         # Global rates
         "anon": "20/minute",  # Anonymous/guest users by ip
-        "user": "50/minute",  # Authenticated users
+        "user": "100/minute",  # Authenticated users (increased for polling)
         # AI endpoints (resource-intensive) | we need to make it stricter in deployment
-        "upload": "10/hour",  # Document upload
-        "chat": "30/minute",  # AI chat
-        "ai_analysis": "20/hour",  # Clause detection & summary
+        "upload": "100/hour",  # Document upload
+        "chat": "100/minute",  # AI chat
+        "ai_analysis": "100/minute",  # Clause detection & summary
         # Auth endpoints
-        "dj_rest_auth": "30/minute",  # dj-rest-auth | we need to make it stricter in deployment
+        "dj_rest_auth": "100/minute",  # dj-rest-auth | we need to make it stricter in deployment
         # Standard CRUD
-        "read": "50/minute",  # List/detail views
+        "read": "100/minute",  # List/detail views (increased for polling)
     },
 }
 
@@ -205,11 +208,12 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 
-# Email Configuration (Brevo/Sendinblue SMTP)
+# Email Configuration (Gmail SMTP)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp-relay.brevo.com")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False") == "True"
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = f"{os.getenv('DEFAULT_FROM_NAME', 'DocuMind')} <{os.getenv('DEFAULT_FROM_EMAIL', 'noreply@documind.com')}>"
@@ -241,10 +245,18 @@ SOCIALACCOUNT_PROVIDERS = {
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# Create data directory for SQLite if it doesn't exist
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(exist_ok=True)
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME", "documind"),
+        "USER": os.getenv("DB_USER", "postgres"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "postgres"),
+        "HOST": os.getenv("DB_HOST", "db"),
+        "PORT": os.getenv("DB_PORT", "5432"),
     }
 }
 

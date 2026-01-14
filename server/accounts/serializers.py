@@ -181,10 +181,16 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
         request = self.context.get('request')
         email = self.validated_data['email']
 
-        # Import here to avoid circular imports
-        from django.contrib.auth.tokens import default_token_generator
-        from django.utils.http import urlsafe_base64_encode
-        from django.utils.encoding import force_bytes
+        # Use allauth's token generator and uid encoder for compatibility with dj-rest-auth
+        if 'allauth' in settings.INSTALLED_APPS:
+            from allauth.account.forms import default_token_generator
+            from allauth.account.utils import user_pk_to_url_str as uid_encoder
+        else:
+            from django.contrib.auth.tokens import default_token_generator
+            from django.utils.http import urlsafe_base64_encode
+            from django.utils.encoding import force_bytes
+            uid_encoder = lambda pk: urlsafe_base64_encode(force_bytes(pk))
+
         from django.core.mail import send_mail
         from django.template.loader import render_to_string
 
@@ -193,12 +199,14 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
         try:
             user = UserModel.objects.get(email=email)
         except UserModel.DoesNotExist:
-            # Don't reveal if email exists - just return silently
             return email
 
         # Generate token and uid
         token = default_token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        if 'allauth' in settings.INSTALLED_APPS:
+            uid = uid_encoder(user)
+        else:
+            uid = uid_encoder(user.pk)
 
         # Build reset URL with frontend domain
         protocol = 'https' if settings.FRONTEND_URL.startswith('https') else 'http'
@@ -230,11 +238,8 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
                 fail_silently=False,
             )
         except Exception as e:
-            # Log the error but don't reveal it to the user
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Failed to send password reset email: {str(e)}")
-            # Still return success to not reveal if email exists
-            # In production, you might want to use a task queue like Celery
 
         return email
