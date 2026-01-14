@@ -93,6 +93,8 @@ INSTALLED_APPS = [
     "accounts",
     "ai_api",
     "corsheaders",
+    # storage
+    "storages",
 ]
 
 SITE_ID = 1
@@ -259,6 +261,30 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT", "5432"),
     }
 }
+
+
+# AWS S3 Storage Configuration
+# Set USE_S3=true in .env to enable S3 storage (for production)
+USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
+
+if USE_S3:
+    # AWS Credentials
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "us-east-1")
+
+    # S3 Settings
+    AWS_DEFAULT_ACL = "private"
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+    AWS_QUERYSTRING_AUTH = True  # Generate signed URLs for private files
+    AWS_S3_FILE_OVERWRITE = False
+
+    # Storage Backends
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+    # Egyptian Laws S3 prefix
+    EGYPTIAN_LAWS_S3_PREFIX = "egyptian-laws/"
 
 
 # Password validation

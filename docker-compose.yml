@@ -74,7 +74,10 @@ services:
     depends_on:
       - server
 
+# Volumes
+# Note: When USE_S3=true, shared_media is not needed (files stored in S3)
+# For local development (USE_S3=false), media volume persists uploaded files
 volumes:
   postgres_data:
   shared_data:
-  shared_media:
+  shared_media:  # Not used when USE_S3=true

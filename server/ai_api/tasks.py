@@ -13,6 +13,7 @@ from .langchain_config import (
     get_text_splitter,
     get_document_vector_store,
 )
+from .s3_utils import get_file_local_path, cleanup_temp_file
 
 
 @shared_task(bind=True, name='ai_api.process_pdf_document')
@@ -39,25 +40,32 @@ def process_pdf_document(self, document_id):
         doc.status = 'processing'
         doc.save(update_fields=['status'])
 
-        # Load PDF with fallback mechanism
-        # Try PyMuPDFLoader first (more robust), fallback to PyPDFLoader
+        # Get local file path (downloads from S3 if needed)
+        pdf_path, is_temp = get_file_local_path(doc.file)
+
         try:
-            loader = PyMuPDFLoader(doc.file.path)
-            pages = loader.load()
-        except Exception as e:
-            # Fallback to PyPDFLoader if PyMuPDF fails
-            print(f"PyMuPDFLoader failed, trying PyPDFLoader: {e}")
+            # Load PDF with fallback mechanism
+            # Try PyMuPDFLoader first (more robust), fallback to PyPDFLoader
             try:
-                loader = PyPDFLoader(doc.file.path)
+                loader = PyMuPDFLoader(pdf_path)
                 pages = loader.load()
-            except KeyError as ke:
-                # If we get KeyError (bbox issue), try with extraction mode
-                if 'bbox' in str(ke):
-                    raise Exception(
-                        "PDF parsing failed. The PDF might have corrupted fonts or non-standard formatting. "
-                        "Please try re-saving the PDF or converting it to a standard format."
-                    ) from ke
-                raise
+            except Exception as e:
+                # Fallback to PyPDFLoader if PyMuPDF fails
+                print(f"PyMuPDFLoader failed, trying PyPDFLoader: {e}")
+                try:
+                    loader = PyPDFLoader(pdf_path)
+                    pages = loader.load()
+                except KeyError as ke:
+                    # If we get KeyError (bbox issue), try with extraction mode
+                    if 'bbox' in str(ke):
+                        raise Exception(
+                            "PDF parsing failed. The PDF might have corrupted fonts or non-standard formatting. "
+                            "Please try re-saving the PDF or converting it to a standard format."
+                        ) from ke
+                    raise
+        finally:
+            # Clean up temp file if downloaded from S3
+            cleanup_temp_file(pdf_path, is_temp)
 
         # Update page count
         doc.page_count = len(pages)

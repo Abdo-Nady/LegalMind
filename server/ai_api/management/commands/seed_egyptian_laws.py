@@ -5,6 +5,8 @@ Run on container startup to ensure laws are always available.
 
 import unicodedata
 import re
+import os
+import tempfile
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
@@ -131,6 +133,38 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Egyptian laws seeding complete!"))
 
+    def _download_from_s3(self, file_name):
+        """
+        Download Egyptian law PDF from S3 to temp file.
+        
+        Returns:
+            tuple: (file_path, is_temp) or (None, False) if not found
+        """
+        try:
+            import boto3
+            from botocore.exceptions import ClientError
+            
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                region_name=settings.AWS_S3_REGION_NAME
+            )
+            
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+            s3_key = f"{settings.EGYPTIAN_LAWS_S3_PREFIX}{file_name}"
+            
+            self.stdout.write(f"    Downloading from S3: {s3_key}")
+            s3.download_file(settings.AWS_STORAGE_BUCKET_NAME, s3_key, temp_file.name)
+            
+            return temp_file.name, True
+        except ClientError as e:
+            self.stderr.write(self.style.ERROR(f"    S3 download error: {e}"))
+            return None, False
+        except Exception as e:
+            self.stderr.write(self.style.ERROR(f"    Error downloading from S3: {e}"))
+            return None, False
+
     def seed_law(self, law_data: dict, force: bool):
         """Seed a single law document."""
         slug = law_data["slug"]
@@ -180,18 +214,32 @@ class Command(BaseCommand):
             law.status = "processing"
             law.save()
 
-            # Get PDF path
-            pdf_path = settings.EGYPTIAN_LAWS_DIR / law_data["file_name"]
-            if not pdf_path.exists():
-                self.stderr.write(self.style.ERROR(f"    PDF not found: {pdf_path}"))
-                law.status = "failed"
-                law.save()
-                return
+            # Get PDF path (S3 or local)
+            is_temp = False
+            if hasattr(settings, 'USE_S3') and settings.USE_S3:
+                pdf_path, is_temp = self._download_from_s3(law_data["file_name"])
+                if pdf_path is None:
+                    self.stderr.write(self.style.ERROR(f"    PDF not found in S3"))
+                    law.status = "failed"
+                    law.save()
+                    return
+            else:
+                pdf_path = settings.EGYPTIAN_LAWS_DIR / law_data["file_name"]
+                if not pdf_path.exists():
+                    self.stderr.write(self.style.ERROR(f"    PDF not found: {pdf_path}"))
+                    law.status = "failed"
+                    law.save()
+                    return
 
-            # Load and process PDF
-            self.stdout.write(f"    Loading PDF: {pdf_path.name}")
-            loader = PyPDFLoader(str(pdf_path))
-            pages = loader.load()
+            try:
+                # Load and process PDF
+                self.stdout.write(f"    Loading PDF: {law_data['file_name']}")
+                loader = PyPDFLoader(str(pdf_path))
+                pages = loader.load()
+            finally:
+                # Clean up temp file if downloaded from S3
+                if is_temp and os.path.exists(pdf_path):
+                    os.remove(pdf_path)
 
             # Sanitize and normalize Arabic content
             for page in pages:
