@@ -142,7 +142,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         # Global rates
         "anon": "20/minute",  # Anonymous/guest users by ip
-        "user": "50/minute",  # Authenticated users
+        "user": "100/minute",  # Authenticated users (increased for polling)
         # AI endpoints (resource-intensive) | we need to make it stricter in deployment
         "upload": "100/hour",  # Document upload
         "chat": "100/minute",  # AI chat
@@ -150,7 +150,7 @@ REST_FRAMEWORK = {
         # Auth endpoints
         "dj_rest_auth": "100/minute",  # dj-rest-auth | we need to make it stricter in deployment
         # Standard CRUD
-        "read": "50/minute",  # List/detail views
+        "read": "100/minute",  # List/detail views (increased for polling)
     },
 }
 
@@ -244,6 +244,10 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+
+# Create data directory for SQLite if it doesn't exist
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(exist_ok=True)
 
 DATABASES = {
     "default": {

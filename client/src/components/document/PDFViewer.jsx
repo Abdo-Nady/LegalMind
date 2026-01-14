@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { motion } from "framer-motion";
 import { FileText, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, RotateCw, Loader2 } from "lucide-react";
@@ -10,6 +10,67 @@ import "react-pdf/dist/Page/TextLayer.css";
 
 // Set up the worker for react-pdf
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
+// Virtual thumbnail component with intersection observer
+function ThumbnailButton({ pageNum, currentPage, onClick }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      {
+        root: null,
+        rootMargin: "200px", // Load thumbnails slightly before they enter viewport
+        threshold: 0.01,
+      }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, []);
+
+  // Auto-scroll to current page thumbnail
+  useEffect(() => {
+    if (currentPage === pageNum && ref.current) {
+      ref.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }
+  }, [currentPage, pageNum]);
+
+  return (
+    <button
+      ref={ref}
+      onClick={() => onClick(pageNum)}
+      className={cn(
+        "flex-shrink-0 w-12 h-16 rounded border transition-all",
+        currentPage === pageNum
+          ? "border-accent ring-2 ring-accent/30"
+          : "border-border hover:border-accent/50"
+      )}
+    >
+      <div className="w-full h-full bg-muted rounded flex items-center justify-center">
+        {isVisible ? (
+          <span className="text-xs text-muted-foreground">{pageNum}</span>
+        ) : (
+          <div className="w-full h-full" />
+        )}
+      </div>
+    </button>
+  );
+}
 
 export function PDFViewer({ documentId, fileUrl, className, highlightedPage }) {
   const [numPages, setNumPages] = useState(null);
@@ -162,27 +223,14 @@ export function PDFViewer({ documentId, fileUrl, className, highlightedPage }) {
       {/* Page thumbnails */}
       {numPages && numPages > 0 && (
         <div className="h-20 bg-card border-t border-border flex items-center gap-2 px-4 overflow-x-auto">
-          {Array.from({ length: Math.min(10, numPages) }).map((_, idx) => (
-            <button
+          {Array.from({ length: numPages }).map((_, idx) => (
+            <ThumbnailButton
               key={idx}
-              onClick={() => goToPage(idx + 1)}
-              className={cn(
-                "flex-shrink-0 w-12 h-16 rounded border transition-all",
-                currentPage === idx + 1
-                  ? "border-accent ring-2 ring-accent/30"
-                  : "border-border hover:border-accent/50"
-              )}
-            >
-              <div className="w-full h-full bg-muted rounded flex items-center justify-center">
-                <span className="text-xs text-muted-foreground">{idx + 1}</span>
-              </div>
-            </button>
+              pageNum={idx + 1}
+              currentPage={currentPage}
+              onClick={goToPage}
+            />
           ))}
-          {numPages > 10 && (
-            <div className="flex-shrink-0 px-2 text-xs text-muted-foreground">
-              +{numPages - 10} more
-            </div>
-          )}
         </div>
       )}
     </div>
