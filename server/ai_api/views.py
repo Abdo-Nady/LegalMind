@@ -58,20 +58,23 @@ class DocumentUploadView(APIView):
     throttle_scope = 'upload'
 
     def post(self, request):
+        # Capture original filename before it gets converted to UUID
+        original_filename = None
+        if 'file' in request.FILES and not request.data.get('title'):
+            uploaded_file = request.FILES['file']
+            original_filename = uploaded_file.name.replace('.pdf', '').replace('_', ' ')
+
         serializer = DocumentUploadSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Create document record
-            doc = serializer.save(user=request.user, status='processing')
-
-            # Set title from filename if not provided
-            if not doc.title:
-                # Extract just the filename without the path
-                filename = os.path.basename(doc.file.name)
-                doc.title = filename.replace('.pdf', '').replace('_', ' ').title()
-                doc.save()
+            # Create document record with original filename as title
+            doc = serializer.save(
+                user=request.user,
+                status='processing',
+                title=original_filename if original_filename else serializer.validated_data.get('title')
+            )
 
             # Queue PDF processing task asynchronously
             process_pdf_document.delay(doc.id)
