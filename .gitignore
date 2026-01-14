@@ -60,3 +60,6 @@ stress_test.sh
 
 # temporary files
 temp/
+
+# Generated font files
+client/src/lib/fonts/amiri-regular.js

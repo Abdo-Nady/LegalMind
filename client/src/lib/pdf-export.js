@@ -1,4 +1,10 @@
 import { jsPDF } from "jspdf";
+import amiriFontBase64 from "./fonts/amiri-regular";
+
+function hasArabicText(text) {
+  const arabicRegex = /[\u0600-\u06FF]/;
+  return arabicRegex.test(text);
+}
 
 /**
  * Converts markdown text to formatted PDF content
@@ -134,6 +140,15 @@ export function exportToPDF(content, title, type, documentName = 'Document') {
     format: 'a4'
   });
 
+  const isArabic = hasArabicText(content) || hasArabicText(title);
+
+  if (isArabic) {
+    doc.addFileToVFS("Amiri-Regular.ttf", amiriFontBase64);
+    doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
+    doc.addFont("Amiri-Regular.ttf", "Amiri", "bold");
+    doc.setFont("Amiri");
+  }
+
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 20;
@@ -156,12 +171,12 @@ export function exportToPDF(content, title, type, documentName = 'Document') {
 
   // Brand text
   doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'bold');
   doc.setFontSize(18);
   doc.text('DocuMind', margin + 22, 22);
 
   // Subtitle
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'normal');
   doc.setFontSize(10);
   doc.setTextColor(200, 200, 200);
   doc.text('Legal Document Analysis', margin + 22, 30);
@@ -173,22 +188,26 @@ export function exportToPDF(content, title, type, documentName = 'Document') {
   doc.roundedRect(pageWidth - margin - badgeWidth, 15, badgeWidth, 8, 2, 2, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'bold');
   doc.text(badgeText, pageWidth - margin - badgeWidth + 5, 20.5);
 
   y = 55;
 
   // Document title
   doc.setTextColor(...primaryColor);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'bold');
   doc.setFontSize(16);
   const titleLines = doc.splitTextToSize(title, contentWidth);
-  doc.text(titleLines, margin, y);
+  if (isArabic) {
+    doc.text(titleLines, pageWidth - margin, y, { align: 'right' });
+  } else {
+    doc.text(titleLines, margin, y);
+  }
   y += titleLines.length * 7 + 3;
 
   // Document source
   doc.setTextColor(...mutedColor);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'normal');
   doc.setFontSize(9);
   doc.text(`Source: ${documentName}`, margin, y);
   y += 5;
@@ -220,6 +239,15 @@ export function exportToPDF(content, title, type, documentName = 'Document') {
     return false;
   }
 
+  function addText(text, x, yPos, options = {}) {
+    if (isArabic) {
+      const xPos = options.useMargin ? pageWidth - margin : x;
+      doc.text(text, xPos, yPos, { align: 'right', ...options });
+    } else {
+      doc.text(text, x, yPos, options);
+    }
+  }
+
   function renderTextSegments(segments, x, currentY, fontSize, maxWidth) {
     doc.setFontSize(fontSize);
     let currentX = x;
@@ -227,11 +255,11 @@ export function exportToPDF(content, title, type, documentName = 'Document') {
 
     for (const segment of segments) {
       if (segment.bold) {
-        doc.setFont('helvetica', 'bold');
+        doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'bold');
       } else if (segment.italic) {
-        doc.setFont('helvetica', 'italic');
+        doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'italic');
       } else {
-        doc.setFont('helvetica', 'normal');
+        doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'normal');
       }
 
       const text = segment.text;
@@ -265,30 +293,30 @@ export function exportToPDF(content, title, type, documentName = 'Document') {
       case 'h1':
         checkPageBreak(15);
         doc.setTextColor(...primaryColor);
-        doc.setFont('helvetica', 'bold');
+        doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'bold');
         doc.setFontSize(14);
         const h1Lines = doc.splitTextToSize(element.text, contentWidth);
-        doc.text(h1Lines, margin, y);
+        addText(h1Lines, margin, y, { useMargin: true });
         y += h1Lines.length * 6 + 4;
         break;
 
       case 'h2':
         checkPageBreak(12);
         doc.setTextColor(...primaryColor);
-        doc.setFont('helvetica', 'bold');
+        doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'bold');
         doc.setFontSize(12);
         const h2Lines = doc.splitTextToSize(element.text, contentWidth);
-        doc.text(h2Lines, margin, y);
+        addText(h2Lines, margin, y, { useMargin: true });
         y += h2Lines.length * 5 + 3;
         break;
 
       case 'h3':
         checkPageBreak(10);
         doc.setTextColor(...primaryColor);
-        doc.setFont('helvetica', 'bold');
+        doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'bold');
         doc.setFontSize(11);
         const h3Lines = doc.splitTextToSize(element.text, contentWidth);
-        doc.text(h3Lines, margin, y);
+        addText(h3Lines, margin, y, { useMargin: true });
         y += h3Lines.length * 5 + 2;
         break;
 
@@ -298,15 +326,15 @@ export function exportToPDF(content, title, type, documentName = 'Document') {
         if (Array.isArray(element.text)) {
           const plainText = element.text.map(s => s.text).join('');
           const pLines = doc.splitTextToSize(plainText, contentWidth);
-          doc.setFont('helvetica', 'normal');
+          doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'normal');
           doc.setFontSize(10);
-          doc.text(pLines, margin, y);
+          addText(pLines, margin, y, { useMargin: true });
           y += pLines.length * 4.5 + 2;
         } else {
           const pLines = doc.splitTextToSize(element.text, contentWidth);
-          doc.setFont('helvetica', 'normal');
+          doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'normal');
           doc.setFontSize(10);
-          doc.text(pLines, margin, y);
+          addText(pLines, margin, y, { useMargin: true });
           y += pLines.length * 4.5 + 2;
         }
         break;
@@ -315,30 +343,38 @@ export function exportToPDF(content, title, type, documentName = 'Document') {
         checkPageBreak(8);
         doc.setTextColor(...accentColor);
         doc.setFontSize(10);
-        doc.text('•', margin, y);
+        if (isArabic) {
+          doc.text('•', pageWidth - margin, y, { align: 'right' });
+        } else {
+          doc.text('•', margin, y);
+        }
         doc.setTextColor(...textColor);
         const bulletText = Array.isArray(element.text)
           ? element.text.map(s => s.text).join('')
           : element.text;
         const bulletLines = doc.splitTextToSize(bulletText, contentWidth - 8);
-        doc.setFont('helvetica', 'normal');
-        doc.text(bulletLines, margin + 6, y);
+        doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'normal');
+        addText(bulletLines, margin + 6, y, { useMargin: isArabic });
         y += bulletLines.length * 4.5 + 1.5;
         break;
 
       case 'numbered-list':
         checkPageBreak(8);
         doc.setTextColor(...accentColor);
-        doc.setFont('helvetica', 'bold');
+        doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'bold');
         doc.setFontSize(10);
-        doc.text(`${element.number}.`, margin, y);
+        if (isArabic) {
+          doc.text(`${element.number}.`, pageWidth - margin, y, { align: 'right' });
+        } else {
+          doc.text(`${element.number}.`, margin, y);
+        }
         doc.setTextColor(...textColor);
-        doc.setFont('helvetica', 'normal');
+        doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'normal');
         const numText = Array.isArray(element.text)
           ? element.text.map(s => s.text).join('')
           : element.text;
         const numLines = doc.splitTextToSize(numText, contentWidth - 10);
-        doc.text(numLines, margin + 8, y);
+        addText(numLines, margin + 8, y, { useMargin: isArabic });
         y += numLines.length * 4.5 + 1.5;
         break;
 
@@ -346,14 +382,18 @@ export function exportToPDF(content, title, type, documentName = 'Document') {
         checkPageBreak(8);
         doc.setTextColor(...mutedColor);
         doc.setFontSize(9);
-        doc.text('◦', margin + 8, y);
+        if (isArabic) {
+          doc.text('◦', pageWidth - margin - 8, y, { align: 'right' });
+        } else {
+          doc.text('◦', margin + 8, y);
+        }
         doc.setTextColor(...textColor);
         const subText = Array.isArray(element.text)
           ? element.text.map(s => s.text).join('')
           : element.text;
         const subLines = doc.splitTextToSize(subText, contentWidth - 16);
-        doc.setFont('helvetica', 'normal');
-        doc.text(subLines, margin + 14, y);
+        doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'normal');
+        addText(subLines, margin + 14, y, { useMargin: isArabic });
         y += subLines.length * 4 + 1;
         break;
 
@@ -370,7 +410,7 @@ export function exportToPDF(content, title, type, documentName = 'Document') {
   doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
 
   doc.setTextColor(...mutedColor);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(isArabic ? 'Amiri' : 'helvetica', 'normal');
   doc.setFontSize(8);
   doc.text('Generated by DocuMind - AI-Powered Legal Document Analysis', margin, footerY);
   doc.text(`Page ${doc.internal.getNumberOfPages()}`, pageWidth - margin - 15, footerY);
