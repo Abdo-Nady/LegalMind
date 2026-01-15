@@ -10,10 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from datetime import timedelta
 import os
-
+from datetime import timedelta
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -58,7 +58,7 @@ CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes max per task
 SECRET_KEY = "django-insecure-kl8eh*3n@knu-=t_lk@q3+v1g-0^+7b-!kz)47ik1=*(6^+k*a"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
