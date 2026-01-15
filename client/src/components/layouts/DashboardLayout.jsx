@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LayoutDashboard, Scale, Settings, LogOut, Menu, X, LogIn, Home } from "lucide-react";
+import { LayoutDashboard, Scale, Settings, LogOut, Menu, X, LogIn, Home, Crown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { getMySubscription } from "@/services/billing.service";
 
 const navItems = [
   { icon: Home, labelKey: "nav.home", path: "/" },
@@ -18,11 +19,29 @@ const navItems = [
 
 export function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [subscription, setSubscription] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, isGuest, user } = useAuth();
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+
+  // Fetch subscription data
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!isGuest && user) {
+        try {
+          const data = await getMySubscription();
+          setSubscription(data);
+        } catch (error) {
+          console.error("Failed to fetch subscription:", error);
+          // Set default free plan if fetch fails
+          setSubscription({ plan_details: { name: 'free', max_egyptian_laws: 0 } });
+        }
+      }
+    };
+    fetchSubscription();
+  }, [user, isGuest]);
 
   // Apply theme on mount and whenever localStorage changes
   useEffect(() => {
@@ -98,6 +117,18 @@ export function DashboardLayout({ children }) {
     ? navItems.filter(item => item.path !== "/settings")
     : navItems;
 
+  // Check if user is free
+  const isFreeUser = !isGuest && (!subscription || subscription.plan_details?.max_egyptian_laws === 0);
+
+  // Handle navigation with subscription check
+  const handleNavClick = (e, item) => {
+    // If clicking on Egyptian Law and user is free, redirect to pricing
+    if (item.path === "/egyptian-law" && isFreeUser) {
+      e.preventDefault();
+      navigate("/pricing");
+    }
+  };
+
   // Get user initials for avatar
   const getInitials = () => {
     if (user?.username) {
@@ -161,10 +192,14 @@ export function DashboardLayout({ children }) {
           <ul className="space-y-1">
             {filteredNavItems.map((item) => {
               const isActive = location.pathname === item.path;
+              const isEgyptianLaw = item.path === "/egyptian-law";
+              const showProBadge = isEgyptianLaw && isFreeUser;
+
               return (
                 <li key={item.path}>
                   <Link
                     to={item.path}
+                    onClick={(e) => handleNavClick(e, item)}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
                       isActive
@@ -174,8 +209,22 @@ export function DashboardLayout({ children }) {
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
                     {sidebarOpen && (
-                      <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-medium">
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-sm font-medium flex-1"
+                      >
                         {t(item.labelKey)}
+                      </motion.span>
+                    )}
+                    {sidebarOpen && showProBadge && (
+                      <motion.span
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500 text-white text-[10px] font-semibold"
+                      >
+                        <Crown className="h-2.5 w-2.5" />
+                        PRO
                       </motion.span>
                     )}
                   </Link>

@@ -15,6 +15,7 @@ import DocumentWorkbench from "./pages/DocumentWorkbench";
 import EgyptianLaw from "./pages/EgyptianLaw";
 import LawWorkbench from "./pages/LawWorkbench";
 import Settings from "./pages/Settings";
+import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PublicRoute } from "./components/PublicRoute";
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
 
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
             <Route path="/egyptian-law" element={<ProtectedRoute><EgyptianLaw /></ProtectedRoute>} />
             <Route path="/egyptian-law/:lawId" element={<ProtectedRoute><LawWorkbench /></ProtectedRoute>} />
             <Route path="/documents" element={<Navigate to="/dashboard" replace />} />
