@@ -55,11 +55,10 @@ CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes max per task
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-kl8eh*3n@knu-=t_lk@q3+v1g-0^+7b-!kz)47ik1=*(6^+k*a"
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-change-me-in-production")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = "accounts.User"

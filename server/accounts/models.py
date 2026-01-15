@@ -3,6 +3,9 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+# Import billing models
+from .models_billing import Plan, Subscription, UsageTracking, EgyptianLawSelection
+
 
 class User(AbstractUser):
     """
@@ -59,3 +62,24 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, "profile"):
         instance.profile.save()
+
+
+@receiver(post_save, sender=User)
+def create_user_subscription(sender, instance, created, **kwargs):
+    """
+    Automatically create a Free subscription for new users
+    """
+    if created:
+        from .models_billing import Plan, Subscription
+        free_plan, _ = Plan.objects.get_or_create(
+            name='free',
+            defaults={
+                'display_name': 'Free',
+                'price': 0,
+                'max_documents': 3,
+                'max_messages_per_day': 20,
+                'max_egyptian_laws': 0,
+                'has_future_features': False,
+            }
+        )
+        Subscription.objects.create(user=instance, plan=free_plan)
