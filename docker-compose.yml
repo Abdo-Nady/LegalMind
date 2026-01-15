@@ -1,7 +1,7 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  # PostgreSQL with pgvector (for Django data + AI embeddings)
+  # PostgreSQL with pgvector
   db:
     image: pgvector/pgvector:pg16
     container_name: documind_db
@@ -16,7 +16,7 @@ services:
       - "5432:5432"
     command: postgres -c shared_preload_libraries=vector
 
-  # Redis (for caching)
+  # Redis
   redis:
     image: redis:7-alpine
     container_name: documind_redis
@@ -42,7 +42,7 @@ services:
       - db
       - redis
 
-  # Celery Worker for async tasks
+  # Celery Worker
   celery_worker:
     build:
       context: ./server
@@ -60,7 +60,7 @@ services:
       - redis
       - server
 
-  # React Frontend (Vite)
+  # React Frontend (Nginx Production Build)
   client:
     build:
       context: ./client
@@ -70,14 +70,11 @@ services:
     env_file:
       - ./client/.env
     ports:
-      - "5173:5173"
+      - "5173:80" # Map host 5173 to container 80 (Nginx)
     depends_on:
       - server
 
-# Volumes
-# Note: When USE_S3=true, shared_media is not needed (files stored in S3)
-# For local development (USE_S3=false), media volume persists uploaded files
 volumes:
   postgres_data:
   shared_data:
-  shared_media:  # Not used when USE_S3=true
+  shared_media:
