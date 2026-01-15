@@ -2,39 +2,58 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Scale, FileText, Loader2 } from "lucide-react";
+import { Scale, FileText, Loader2, Crown } from "lucide-react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { LawCard } from "@/components/egyptian-law/LawCard";
 import { EGYPTIAN_LAW_DOCUMENTS } from "@/data/egyptianLawDocuments";
 import { lawService } from "@/services/law.service";
+import { getMySubscription } from "../services/billing.service";
 
 export default function EgyptianLaw() {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const [readyLaws, setReadyLaws] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [subscription, setSubscription] = useState(null);
 
   const isRTL = i18n.language === "ar";
 
   useEffect(() => {
-    const fetchLaws = async () => {
+    const fetchData = async () => {
       try {
-        const data = await lawService.list();
-        // Handle both array response and paginated response
-        const laws = Array.isArray(data) ? data : data.results || data;
+        // Fetch laws
+        const lawsData = await lawService.list();
+        const laws = Array.isArray(lawsData) ? lawsData : lawsData.results || lawsData;
         setReadyLaws(laws.map(law => law.slug));
+
+        // Fetch subscription
+        try {
+          const subData = await getMySubscription();
+          setSubscription(subData);
+        } catch (error) {
+          console.error("Failed to fetch subscription:", error);
+        }
       } catch (error) {
         console.error("Failed to fetch laws:", error);
-        // Continue with static data even if API fails
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLaws();
+    fetchData();
   }, []);
 
   const handleDocumentClick = (document) => {
+    // Check if user has access to Egyptian laws
+    const planName = subscription?.plan_details?.name || 'free';
+    const hasAccess = subscription?.plan_details?.max_egyptian_laws !== 0;
+
+    // If free user, redirect to pricing
+    if (subscription && subscription.plan_details?.max_egyptian_laws === 0) {
+      navigate('/pricing');
+      return;
+    }
+
     // Only navigate if the law is ready
     if (readyLaws.includes(document.id)) {
       navigate(`/egyptian-law/${document.id}`);
@@ -50,7 +69,7 @@ export default function EgyptianLaw() {
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
-        <Header />
+        <Header subscription={subscription} />
         {loading ? (
           <LoadingState />
         ) : (
@@ -64,8 +83,11 @@ export default function EgyptianLaw() {
   );
 }
 
-function Header() {
+function Header({ subscription }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const hasAccess = subscription?.plan_details?.max_egyptian_laws !== 0;
 
   return (
     <div className="border-b border-border bg-card/50">
@@ -78,10 +100,18 @@ function Header() {
           <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center">
             <Scale className="h-6 w-6 text-primary" />
           </div>
-          <div>
-            <h1 className="font-serif text-3xl text-foreground">
-              {t("egyptianLaw.title")}
-            </h1>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h1 className="font-serif text-3xl text-foreground">
+                {t("egyptianLaw.title")}
+              </h1>
+              {!hasAccess && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-red-500 text-white text-xs font-semibold">
+                  <Crown className="h-3 w-3" />
+                  PRO
+                </span>
+              )}
+            </div>
             <p className="text-muted-foreground">{t("egyptianLaw.titleAr")}</p>
           </div>
         </motion.div>
@@ -93,6 +123,25 @@ function Header() {
         >
           {t("egyptianLaw.subtitle")}
         </motion.p>
+
+        {!hasAccess && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-4 p-4 rounded-lg bg-red-50 border border-red-200"
+          >
+            <p className="text-sm text-red-800 mb-2">
+              Egyptian Law access requires a Standard or Premium plan
+            </p>
+            <button
+              onClick={() => navigate('/pricing')}
+              className="text-sm font-semibold text-red-600 hover:text-red-700 underline"
+            >
+              Upgrade Now →
+            </button>
+          </motion.div>
+        )}
       </div>
     </div>
   );

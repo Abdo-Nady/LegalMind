@@ -45,6 +45,15 @@ from .langchain_config import (
 )
 from .tasks import process_pdf_document
 
+# Import billing permissions
+from accounts.permissions import (
+    check_document_limit,
+    check_message_limit,
+    check_egyptian_law_access,
+    has_egyptian_law_access,
+    increment_document_count
+)
+
 
 class DocumentUploadView(APIView):
     """
@@ -57,6 +66,7 @@ class DocumentUploadView(APIView):
     permission_classes = [IsAuthenticated]
     throttle_scope = 'upload'
 
+    @check_document_limit
     def post(self, request):
         # Capture original filename before it gets converted to UUID
         original_filename = None
@@ -78,6 +88,9 @@ class DocumentUploadView(APIView):
 
             # Queue PDF processing task asynchronously
             process_pdf_document.delay(doc.id)
+
+            # Increment user's document count
+            increment_document_count(request.user)
 
             # Return immediately with document info
             return Response(
@@ -158,6 +171,7 @@ class DocumentChatView(APIView):
     permission_classes = [IsAuthenticated]
     throttle_scope = 'chat'
 
+    @check_message_limit
     def post(self, request, pk):
         # Validate request
         serializer = ChatQuerySerializer(data=request.data)
@@ -427,7 +441,16 @@ class EgyptianLawChatView(APIView):
     permission_classes = [IsAuthenticated]
     throttle_scope = 'chat'
 
+    @check_message_limit
     def post(self, request, slug):
+        # Check law access based on user's plan
+        has_access, error_msg = has_egyptian_law_access(request.user, slug)
+        if not has_access:
+            return Response(
+                {"error": error_msg, "upgrade_required": True},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         # Validate request
         serializer = ChatQuerySerializer(data=request.data)
         if not serializer.is_valid():
@@ -531,6 +554,14 @@ class EgyptianLawClauseDetectionView(APIView):
     throttle_scope = 'ai_analysis'
 
     def post(self, request, slug):
+        # Check law access based on user's plan
+        has_access, error_msg = has_egyptian_law_access(request.user, slug)
+        if not has_access:
+            return Response(
+                {"error": error_msg, "upgrade_required": True},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         try:
             law = EgyptianLaw.objects.get(slug=slug)
         except EgyptianLaw.DoesNotExist:
@@ -580,6 +611,14 @@ class EgyptianLawSummaryView(APIView):
     throttle_scope = 'ai_analysis'
 
     def post(self, request, slug):
+        # Check law access based on user's plan
+        has_access, error_msg = has_egyptian_law_access(request.user, slug)
+        if not has_access:
+            return Response(
+                {"error": error_msg, "upgrade_required": True},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         try:
             law = EgyptianLaw.objects.get(slug=slug)
         except EgyptianLaw.DoesNotExist:

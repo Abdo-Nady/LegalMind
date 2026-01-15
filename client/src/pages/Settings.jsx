@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { User, Bell, Shield, CreditCard, Palette, HelpCircle, Eye, EyeOff, Trash2 } from "lucide-react";
+import { User, Bell, Shield, CreditCard, Palette, HelpCircle, Eye, EyeOff, Trash2, ArrowRight, TrendingUp } from "lucide-react";
 import { DashboardLayout } from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useUploadAvatar, useDeleteAvatar, useUpdateUsername, useChangePassword } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
+import { getMySubscription } from "../services/billing.service";
 
 const settingsSections = [
   { id: "profile", labelKey: "settings.sections.profile", icon: User },
@@ -23,9 +24,14 @@ const settingsSections = [
 
 export default function Settings() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("profile");
   const { user, isGuest, loading, refreshUser } = useAuth();
   const [isGoogleUser, setIsGoogleUser] = useState(false);
+
+  // Billing state
+  const [subscription, setSubscription] = useState(null);
+  const [loadingBilling, setLoadingBilling] = useState(false);
 
   // Profile form state
   const [username, setUsername] = useState("");
@@ -60,6 +66,25 @@ export default function Settings() {
       setIsGoogleUser(loginMethod === 'google');
     }
   }, [user, isGuest]);
+
+  // Load billing data when billing section is active
+  useEffect(() => {
+    if (activeSection === 'billing' && user && !isGuest) {
+      fetchBillingData();
+    }
+  }, [activeSection, user, isGuest]);
+
+  const fetchBillingData = async () => {
+    try {
+      setLoadingBilling(true);
+      const data = await getMySubscription();
+      setSubscription(data);
+    } catch (error) {
+      console.error('Error fetching billing data:', error);
+    } finally {
+      setLoadingBilling(false);
+    }
+  };
 
   const handleAvatarUpload = async (event) => {
     const file = event.target.files[0];
@@ -566,8 +591,188 @@ export default function Settings() {
               </Card>
             )}
 
+            {/* Billing Section */}
+            {activeSection === "billing" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('settings.billing.title')}</CardTitle>
+                  <CardDescription>
+                    {t('settings.billing.subtitle')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loadingBilling ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : subscription ? (
+                    <div className="space-y-6">
+                      {/* Current Plan Card */}
+                      <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg p-6 border border-primary/20">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-1">{t('settings.billing.currentPlan')}</p>
+                            <h3 className="text-2xl font-bold text-foreground">
+                              {subscription.plan_details?.display_name || 'Free'}
+                            </h3>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-3xl font-bold text-primary">
+                              ${subscription.plan_details?.price || 0}
+                            </p>
+                            <p className="text-sm text-muted-foreground">/month</p>
+                          </div>
+                        </div>
+
+                        {/* Plan Features Summary */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-primary/20">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5 text-primary" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Documents</p>
+                              <p className="text-sm font-semibold">
+                                {subscription.plan_details?.max_documents === null
+                                  ? 'Unlimited'
+                                  : subscription.plan_details?.max_documents || 0}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5 text-primary" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Messages/Day</p>
+                              <p className="text-sm font-semibold">
+                                {subscription.plan_details?.max_messages_per_day === null
+                                  ? 'Unlimited'
+                                  : subscription.plan_details?.max_messages_per_day || 0}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5 text-primary" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Egyptian Laws</p>
+                              <p className="text-sm font-semibold">
+                                {subscription.plan_details?.max_egyptian_laws === null
+                                  ? 'All'
+                                  : subscription.plan_details?.max_egyptian_laws === 0
+                                    ? 'None'
+                                    : subscription.plan_details?.max_egyptian_laws}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Status & Renewal */}
+                        {subscription.end_date && (
+                          <div className="mt-6 pt-6 border-t border-primary/20">
+                            <p className="text-sm text-muted-foreground">
+                              {t('settings.billing.renewsOn')}: <span className="font-medium text-foreground">
+                                {new Date(subscription.end_date).toLocaleDateString()}
+                              </span>
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                          onClick={() => navigate('/pricing')}
+                          className="flex-1"
+                        >
+                          {subscription.plan_details?.name === 'premium' ? 'View All Plans' : 'Upgrade Plan'}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {/* Upgrade Suggestion */}
+                      {subscription.plan_details?.name !== 'premium' && (
+                        <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                          <h4 className="font-semibold text-foreground mb-2">
+                            {t('settings.billing.upgradeTitle')}
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {t('settings.billing.upgradeDescription')}
+                          </p>
+                          <Button variant="outline" size="sm" onClick={() => navigate('/pricing')}>
+                            {t('settings.billing.viewPlans')}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Default Free Plan Card */}
+                      <div className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg p-6 border border-border">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-1">Current Plan</p>
+                            <h3 className="text-2xl font-bold text-foreground">Free</h3>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-3xl font-bold text-foreground">$0</p>
+                            <p className="text-sm text-muted-foreground">/month</p>
+                          </div>
+                        </div>
+
+                        {/* Plan Features Summary */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-border">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Documents</p>
+                              <p className="text-sm font-semibold text-foreground">3</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Messages/Day</p>
+                              <p className="text-sm font-semibold text-foreground">20</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Egyptian Laws</p>
+                              <p className="text-sm font-semibold text-foreground">None</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                          onClick={() => navigate('/pricing')}
+                          className="flex-1"
+                        >
+                          Upgrade Plan
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      {/* Upgrade Suggestion */}
+                      <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                        <h4 className="font-semibold text-foreground mb-2">
+                          Unlock Premium Features
+                        </h4>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Upgrade to Standard or Premium to get more documents, messages, and access to Egyptian laws.
+                        </p>
+                        <Button variant="outline" size="sm" onClick={() => navigate('/pricing')}>
+                          View Plans
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Generic Placeholder for other sections */}
-            {activeSection !== "profile" && activeSection !== "security" && activeSection !== "appearance" && (
+            {activeSection !== "profile" && activeSection !== "security" && activeSection !== "appearance" && activeSection !== "billing" && (
               <Card>
                 <CardHeader>
                   <CardTitle>
